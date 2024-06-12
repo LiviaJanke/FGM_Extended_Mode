@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 #%%
 
 
-SC_1_01_01_2002 = np.loadtxt('Spacecraft_1_10_day_01_01_2002', dtype = str)
+#SC_1_01_01_2002 = np.loadtxt('Spacecraft_1_10_day_01_01_2002', dtype = str)
 
 
 #%%
@@ -50,12 +50,13 @@ column_5 = np.array((df_no_nan[df_no_nan.columns[5]]))
 
 #%%
 
-plt.plot(column_0, column_5)
+plt.plot(column_0, linewidth = 0, marker = '.')
+plt.show()
 
 #%%
 
 
-df_no_nan[df_no_nan.columns[4]].plot()
+df_no_nan[df_no_nan.columns[0]].plot()
 
 #%%
 
