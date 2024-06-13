@@ -54,17 +54,17 @@ df.reset_index(inplace = True)
 
 #%%
 
-for i in np.arange(0, len(df['count'])):
+#for i in np.arange(0, len(df['count'])):
     
-    try:    
+#    try:    
         
-        count_val = float(df['count'][456])
+#        count_val = float(df['count'][456])
         
-        df.replace(to_replace = df['count'][456], value = count_val)
+#        df.replace(to_replace = df['count'][456], value = count_val)
         
-    except ValueError:
+#    except ValueError:
         
-        count_val = 445
+#        count_val = 445
 
 
 
