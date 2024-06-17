@@ -17,21 +17,28 @@ from datetime import datetime,timedelta
 from numpy import sqrt,array,delete,zeros,size,pi,copy,sin,cos
 
 #%% filetools
-from sys import path
-if not path.count("../../Lib"):
-    path.append("../../Lib")
-del path
 
-#%%
+#from sys import path
+#if not path.count("../../Lib"):
+#    path.append("../../Lib")
+#del path
 
-#from fgmfiletools import fgmsave
+import sys 
+
+sys.path.append('C:/FGM_Extended_Mode/Lib') 
+
+from fgmfiletools import fgmsave
 
 #%% open
 # filename = 'C1_150605_B_1.RawExtMd'
 # filename = 'C2_150605_B_1.RawExtMd'
-filepath,filebase,fileext = './020227','C1_020227_ext','txt'
+#filepath,filebase,fileext = './020227','C1_020227_ext','txt'
+filepath,filebase,fileext = './testing','C1_020227_ext','txt'
 #filename = filepath + '/' + filebase + '.' + fileext
-filename = 'C1_020227_ext.txt'
+#filename = 'C1_020227_ext.txt'
+
+filename = './Data' + '/' + filebase + '.' + fileext
+
 data = read_csv(filename,header=None)
 del filename
 # decode
@@ -61,13 +68,13 @@ def quickplot(titletext,xlabeltext,ylabeltext):
     subplot(5,1,5);plot(t,r,label='range');grid();legend()
     xlabel(xlabeltext)
     suptitle(titletext,y=0.94)
-    #savefig(filepath+'/'+titletext+'.png',dpi=150)
-    savefig(titletext+'.png',dpi=150)
+    savefig(filepath+'/'+titletext+'.png',dpi=150)
+    #savefig(titletext+'.png',dpi=150)
     return
 
-#quickplot(filebase+'_raw','sample #','count [#]')
+quickplot(filebase+'_raw','sample #','count [#]')
 
-quickplot(filebase,'sample #','count [#]')
+#quickplot(filebase,'sample #','count [#]')
 
 # Now check plot for any major errors and edit the file if necessary, but try
 # to avoid deleting any whole lines as this will mess-up the time-stamping following
@@ -102,9 +109,9 @@ def quicksave(filename,t,x,y,z,r):
     file.close()
     return
 
-#filename = filepath + '/' + filebase + '_raw_timestamped.txt'
+filename = filepath + '/' + filebase + '_raw_timestamped.txt'
 
-filename = filebase + '_raw_timestamped.txt'
+#filename = filebase + '_raw_timestamped.txt'
 
 quicksave(filename,t,x,y,z,r)
 del filename
@@ -140,8 +147,8 @@ def quickopen(filename):
     r = array(r)
     return t,x,y,z,r
 
-#filename = filepath + '/' + filebase + '_raw_timestamped.txt'
-filename = filebase + '_raw_timestamped.txt'
+filename = filepath + '/' + filebase + '_raw_timestamped.txt'
+#filename = filebase + '_raw_timestamped.txt'
 t,x,y,z,r = quickopen(filename)
 del filename
 quickplot(filebase+'_raw_timestamped_despiked','time [UTC]','count [#]')
@@ -206,6 +213,6 @@ quickplot(filebase+'_rotated_scs','time [UTC]','[nT]')
 
 #%% save data in 'fgm dp' format
 savename = filepath + '/' + filebase + '_calibrated.txt'
-#fgmsave(savename,t,x,y,z)
+fgmsave(savename,t,x,y,z)
             
             

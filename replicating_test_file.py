@@ -14,16 +14,16 @@ import matplotlib.pyplot as plt
 
 #%%
 
-df_test_file = pd.read_csv('C1_020227_ext.txt', header = None)
+df_test_file = pd.read_csv('Data/C1_020227_ext.txt', header = None)
 
-df_test_file_with_names = pd.read_csv('C1_020227_ext.txt', names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'])
+df_test_file_with_names = pd.read_csv('Data/C1_020227_ext.txt', names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'])
 
 test_df = df_test_file_with_names
 #%%
 
-df_L_TO_R = pd.read_csv('C1_020227_ext_L_TO_R.txt',  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+df_L_TO_R = pd.read_csv('Data/C1_020227_ext_L_TO_R.txt',  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
-df_R_TO_L = pd.read_csv('C1_020227_ext_R_TO_l.txt',  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+df_R_TO_L = pd.read_csv('Data/C1_020227_ext_R_TO_l.txt',  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
 #%%
 
