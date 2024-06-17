@@ -267,25 +267,8 @@ df_filtered = df_continuous.drop(labels = bad_indices, axis = 0)
 
 #%%
 
-for i in np.arange(0, len(bad_indices)):
+np.savetxt(r'filtered_data_test', df_filtered.values, fmt = '%s')
 
-    df_continuous.drop(labels = bad_indices[i], axis = 0)    
-    
-    
-#%%
-
-    if unique > 200:
-        
-        bad_reset_vector_packets.append(i)
-        
-        bad_indices.append(packet_indices)
-        
-        #df_reset_filter = df_continuous.drop(labels = packet_indices, axis = 0)
- 
-    else:
-        
-        ok.append(i)
-    
 #%%    
     
     
