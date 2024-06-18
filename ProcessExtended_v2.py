@@ -37,7 +37,7 @@ from fgmfiletools import fgmsave
 #filename = filepath + '/' + filebase + '.' + fileext
 #filename = 'C1_020227_ext.txt'
 
-filepath,filebase,fileext = 'C:/FGM_Extended_Mode/ICME_Event_Data/Ext_010404', 'C4_010404_ext_cleaned', 'csv'
+filepath,filebase,fileext = 'C:/FGM_Extended_Mode/ICME_Event_Data/Ext_010404', 'C1_010404_ext_cleaned', 'csv'
 
 #filename = './Data' + '/' + filebase + '.' + fileext
 
