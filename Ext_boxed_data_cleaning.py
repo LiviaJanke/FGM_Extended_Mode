@@ -20,9 +20,9 @@ res_std_cutoff = 1
 
 #%%
 
-filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010404'
+filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010413'
 
-filename = '\C4_010404_ext'
+filename = '\C4_010413_ext'
 
 extension = 'txt'
 
@@ -190,6 +190,14 @@ savecsv = savename + '.csv'
 np.savetxt(savetxt, df_filtered.values, fmt = '%s')
 
 df_filtered.to_csv(savecsv, index=False)  
+
+#%%
+
+# could try putting entry and exit times for timestamping into csv file?
+
+# or make a data file?
+
+# maybe data file more straightforward
 
 
 
