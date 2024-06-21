@@ -20,15 +20,17 @@ res_std_cutoff = 1
 
 #%%
 
-filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010413'
+filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010421'
 
-filename = '\C4_010413_ext'
+filename = '\C3_010421_ext'
 
 extension = 'txt'
 
 data_file = filebase + filename #+ '.' + extension
 
 #%%
+
+data_file = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_decoded.csv'
 
 df_raw = pd.read_csv(data_file,  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
@@ -180,7 +182,9 @@ df_filtered = df_continuous.drop(labels = bad_indices, axis = 0)
 
 #%%
 
-savename = filebase + filename + '_cleaned'
+#savename = filebase + filename + '_cleaned'
+
+savename = 'C1_010421_B_BS_decoded_cleaned'
 
 savetxt = savename + '.txt'
 
