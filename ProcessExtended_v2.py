@@ -33,11 +33,11 @@ from fgmfiletools import fgmsave
 # filename = 'C1_150605_B_1.RawExtMd'
 # filename = 'C2_150605_B_1.RawExtMd'
 #filepath,filebase,fileext = './020227','C1_020227_ext','txt'
-#filepath,filebase,fileext = './testing','C1_020227_ext','txt'
+filepath,filebase,fileext = './testing','C1_020227_ext','txt'
 #filename = filepath + '/' + filebase + '.' + fileext
 #filename = 'C1_020227_ext.txt'
 
-filepath,filebase,fileext = 'C:/FGM_Extended_Mode/ICME_Event_Data/Ext_010413', 'C1_010413_ext_cleaned', 'csv'
+#filepath,filebase,fileext = 'C:/FGM_Extended_Mode/ICME_Event_Data/Ext_010421', 'C1_010421_ext_cleaned', 'csv'
 
 #filename = './Data' + '/' + filebase + '.' + fileext
 
@@ -87,19 +87,23 @@ quickplot(filebase+'_raw','sample #','count [#]')
 
 #%% timing
 # C1 extended mode period in Feb 02
-#ext_entry = datetime.fromisoformat('2002-02-27T23:34:54.000')#.replace(tzinfo=None)
-#ext_exit = datetime.fromisoformat('2002-02-28T22:35:00.000')#.replace(tzinfo=None)
+ext_entry = datetime.fromisoformat('2002-02-27T23:34:54.000')#.replace(tzinfo=None)
+ext_exit = datetime.fromisoformat('2002-02-28T22:35:00.000')#.replace(tzinfo=None)
 
 
 # C1 extended mode period
 
-ext_entry = datetime.fromisoformat('2001-04-13T03:55:00')#.replace(tzinfo=None)
-ext_exit = datetime.fromisoformat('2001-04-13T07:34:50')#.replace(tzinfo=None)
+#ext_entry = datetime.fromisoformat('2001-04-13T03:55:00')#.replace(tzinfo=None)
+#ext_exit = datetime.fromisoformat('2001-04-13T07:34:50')#.replace(tzinfo=None)
+
+#ext_entry = datetime.fromisoformat('2001-04-18T07:34:15')#.replace(tzinfo=None)
+#ext_exit = datetime.fromisoformat('2001-04-20T09:35:33')#.replace(tzinfo=None)
+
 
 # from SATT
-#t_spin = 4.0165231
+t_spin = 4.0165231
 
-t_spin = 4.0071
+#t_spin = 4.0071
 
 # build timeline
 def make_t():

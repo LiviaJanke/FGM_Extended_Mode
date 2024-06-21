@@ -20,9 +20,9 @@ res_std_cutoff = 1
 
 #%%
 
-filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010413'
+filebase = 'C:\FGM_Extended_Mode\ICME_Event_Data\Ext_010421'
 
-filename = '\C4_010413_ext'
+filename = '\C3_010421_ext'
 
 extension = 'txt'
 
