@@ -245,13 +245,17 @@ for i in packet_range:
     
     decdf = decode_packet_odd(int(i))
     
-    even_dfs.append(decdf)
+    odd_dfs.append(decdf)
 
-even_df = pd.concat(even_dfs)
+odd_df = pd.concat(odd_dfs)
 
-even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+odd_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
 
+#%%
 
+even_df.to_csv('even_decoding.csv', index=False)  
+
+odd_df.to_csv('odd_decoding.csv', index = False)
 
 
 
