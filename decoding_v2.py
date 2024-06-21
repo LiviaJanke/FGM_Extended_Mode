@@ -176,21 +176,80 @@ num_of_packets = num_of_bytes / 3611
 
 #%%
 
-packet_range = np.arange(1, num_of_packets + 1)
+packet_range = np.arange(0, num_of_packets)
 
 
-packet_lower_indices = np.arange(0,num_of_packets * 3611, 3611) + 49
+packet_lower_indices = np.arange(0, num_of_packets * 3611, 3611) + 49
 
 packet_higher_indices = np.arange(3611 , (num_of_packets * 3611) +1, 3611)
 
 
-high_low = np.column_stack((packet_lower_indices, packet_higher_indices))
+low_high = np.column_stack((packet_lower_indices, packet_higher_indices))
 
 #%%
 
+def get_packet(num):
+    
+    packet = []
+
+    for i in np.arange(int(low_high[num][0]), int(low_high[num][1])):
+        
+        bite = byte_val(i)
+         
+        packet.append(bite)
+    
+    return packet
 
 
+def decode_packet_even(num):
+    
+    p = get_packet(num)
 
+    x,y,z, resolution, reset = packet_decoding_even(p)
+    
+    df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
+    
+    return df_p
+
+def decode_packet_odd(num):
+    
+    p = get_packet(num)
+
+    x,y,z, resolution, reset = packet_decoding_odd(p)
+    
+    df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
+    
+    return df_p
+    
+    
+
+#%%
+
+even_dfs = []
+
+for i in packet_range:
+    
+    decdf = decode_packet_even(int(i))
+    
+    even_dfs.append(decdf)
+
+even_df = pd.concat(even_dfs)
+
+even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+
+#%%
+
+odd_dfs = []
+
+for i in packet_range:
+    
+    decdf = decode_packet_odd(int(i))
+    
+    even_dfs.append(decdf)
+
+even_df = pd.concat(even_dfs)
+
+even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
 
 
 
