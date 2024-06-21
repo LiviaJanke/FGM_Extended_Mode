@@ -18,7 +18,15 @@ from datetime import date
 
 #%%
 
-df_with_pos = pd.read_csv('C:\FGM_Extended_Mode\BS_data_files\C1_010421_B_BS.txt', delimiter = ' ', names = [ 'position_code',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
+filebase = 'C:\FGM_Extended_Mode\BS_data_files'
+
+filename = 'C1_010421_B_BS'
+
+ext = '.txt'
+
+filepath = filebase +'/' + filename + ext
+
+df_with_pos = pd.read_csv(filepath, delimiter = ' ', names = [ 'position_code',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
 
 df = df_with_pos.drop('position_code', axis = 1)
 
@@ -209,6 +217,8 @@ def decode_packet_even(num):
     
     df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
     
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']
+    
     return df_p
 
 def decode_packet_odd(num):
@@ -218,6 +228,8 @@ def decode_packet_odd(num):
     x,y,z, resolution, reset = packet_decoding_odd(p)
     
     df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']
+    
     
     return df_p
     
@@ -225,37 +237,65 @@ def decode_packet_odd(num):
 
 #%%
 
-even_dfs = []
+all_decoded_dfs = []
 
 for i in packet_range:
     
-    decdf = decode_packet_even(int(i))
+    even_df = decode_packet_even(int(i))
+
+    odd_df = decode_packet_odd(int(i))
     
-    even_dfs.append(decdf)
+    all_decoded_dfs.append(even_df)
+    
+    all_decoded_dfs.append(odd_df)
+    
+all_decoded_df = pd.concat(all_decoded_dfs)
 
-even_df = pd.concat(even_dfs)
 
-even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+#even_dfs = []
+
+#for i in packet_range:
+    
+#    decdf = decode_packet_even(int(i))
+    
+#    even_dfs.append(decdf)
+
+
+#even_df = pd.concat(even_dfs)
+
+#even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+
+#odd_dfs = []
+
+#for i in packet_range:
+    
+#    decdf = decode_packet_odd(int(i))
+    
+#    odd_dfs.append(decdf)
+
+#odd_df = pd.concat(odd_dfs)
+
+#odd_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+
+
+
+#even_df.to_csv('even_decoding.csv', index = False)  
+
+#odd_df.to_csv('odd_decoding.csv', index = False)
 
 #%%
 
-odd_dfs = []
+filebase = 'C:\FGM_Extended_Mode\BS_decoded_files'
 
-for i in packet_range:
-    
-    decdf = decode_packet_odd(int(i))
-    
-    odd_dfs.append(decdf)
+filename = 'C1_010421_B_BS'
 
-odd_df = pd.concat(odd_dfs)
+ext = '.csv'
 
-odd_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
+filepath = filebase +'/' + filename +'_decoded' + ext
+
+all_decoded_df.to_csv(filepath, index = False)
 
 #%%
-
-even_df.to_csv('even_decoding.csv', index=False)  
-
-odd_df.to_csv('odd_decoding.csv', index = False)
 
 
 

@@ -32,16 +32,17 @@ data_file = filebase + filename #+ '.' + extension
 
 data_file = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_decoded.csv'
 
-df_raw = pd.read_csv(data_file,  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+df_raw = pd.read_csv(data_file, skiprows = 1, names = ['reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
+df = df_raw
 
 #%%
 
-df_raw_no_headers = df_raw.dropna(axis = 0, how = 'any')
+#df_raw_no_headers = df_raw.dropna(axis = 0, how = 'any')
 
-df = df_raw_no_headers.reset_index(drop = True)
+#df = df_raw_no_headers.reset_index(drop = True)
 
-number_of_packets = len(df['count']) / 445
+number_of_packets = len(df_raw['reset_vector']) / 445
 
 packet_list = np.arange(1, number_of_packets + 1)
 
@@ -74,9 +75,9 @@ for i in packet_list:
     
     packet.reset_index(inplace = True, drop = True)
     
-    packet_count = packet['count']
+    #packet_count = packet['count']
     
-    if packet_count.loc[0] == 'bef ':
+    if packet.loc[0]['reset_vector'] == 'bef ':
         
         even_packet_nums.append(packet_num)
         
