@@ -79,7 +79,7 @@ def packet_decoding_even(number):
         
         byte_num = int(offset + i)
         
-        if i < 3552:
+        if i < 3551:
             
             x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
@@ -304,10 +304,10 @@ for i in packet_range:
 
 #%%
 
+
 odd_df = pd.concat(odd_dfs)
 
  
-#%%
 odd_df.to_csv('odd_decoding_with_index.csv', index = False)
 
 #%%
@@ -337,17 +337,94 @@ all_decoded_df = pd.concat(all_decoded_dfs)
 
 #%%
 
+
+
+#%%
+
+# filtering for quality and only getting sequential even/odd
+
+all_valid_dfs = []
+
+for i in packet_range:
+    
+    even_df_i = packet_decoding_even(int(i))
+    
+    ecount, eunique, etop, efreq = even_df_i['reset'].describe()
+    
+    odd_df_i = packet_decoding_odd(int(i))
+    
+    ocount, ounique, otop, ofreq = odd_df_i['reset'].describe()
+    
+    if eunique < 100:
+        
+        all_valid_dfs.append(even_df_i)
+        
+    elif ounique < 100:
+        
+        all_valid_dfs.append(odd_df_i)
+        
+    else:
+        
+        print('yikes')
+        
+#%%    
+    
+all_valid_df = pd.concat(all_valid_dfs)
+
+
+#%%
+
+sequential_data = all_valid_df.reset_index()
+
+
+
+#%%
+
+incomplete_rows = np.arange(445, len(sequential_data), 890)
+
+
+
+for i in incomplete_rows:
+    
+    
+    sequential_data.loc[i-1,'reset'] = sequential_data.loc[i, 'reset']
+    
+    sequential_data.loc[i - 1,'resolution'] = sequential_data.loc[i, 'resolution']
+    
+    sequential_data.loc[i-1,'z'] = sequential_data.loc[i,'z']
+
+#%%
+
+
+df_complete = sequential_data[sequential_data['x'] != "bef"]
+
+#%%
+
 filebase = 'C:\FGM_Extended_Mode\BS_decoded_files'
 
 filename = 'C1_010421_B_BS'
 
 ext = '.csv'
 
-filepath = filebase +'/' + filename +'_decoded' + ext
+filepath = filebase +'/' + filename +'_decoded_filtered' + ext
 
-all_decoded_df.to_csv(filepath)
+df_complete.to_csv(filepath)
+
 
 #%%
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
