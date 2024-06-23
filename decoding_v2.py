@@ -80,18 +80,30 @@ def packet_decoding_even(number):
         byte_num = int(offset + i)
         
         if i < 3557:
-        
-            x = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
             
-            y = s16(int((byte_val(byte_num + 2) + byte_val(byte_num + 3)).lstrip('0'), 16))
+            x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
-            z = s16(int((byte_val(byte_num + 4) + byte_val(byte_num + 5)).lstrip('0'), 16))
+            x_by_nozero = x_by[:-1].lstrip('0')
             
-            print((byte_val(byte_num + 4) + byte_val(byte_num + 5)))
+            x_byte = x_by_nozero + x_by[-1]
+
+            x = s16(int(x_byte, 16))
             
-            print(z)
+            y_by = (byte_val(byte_num + 2) + byte_val(byte_num + 3))
             
-            print(byte_num)
+            y_nz = y_by[:-1].lstrip('0')
+            
+            y_byte = y_nz + y_by[-1]
+            
+            y = s16(int(y_byte, 16))
+            
+            z_by = (byte_val(byte_num + 4) + byte_val(byte_num + 5))
+            
+            z_nz = z_by[:-1].lstrip('0')
+            
+            z_byte = z_nz + z_by[-1]
+            
+            z = s16(int(z_byte, 16))
             
             range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
@@ -99,9 +111,21 @@ def packet_decoding_even(number):
             
         else:
 
-            x = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
-            y = s16(int((byte_val(byte_num + 2) + byte_val(byte_num + 3)).lstrip('0'), 16))            
+            x_by_nozero = x_by[:-1].lstrip('0')
+            
+            x_byte = x_by_nozero + x_by[-1]
+
+            x = s16(int(x_byte, 16))
+            
+            y_by = (byte_val(byte_num + 2) + byte_val(byte_num + 3))
+            
+            y_nz = y_by[:-1].lstrip('0')
+            
+            y_byte = y_nz + y_by[-1]
+            
+            y = s16(int(y_byte, 16))
 
             z = 'bef'
             
@@ -155,12 +179,29 @@ def packet_decoding_odd(number):
         
         if i > 5:
         
-            x = s16(int((byte_val(byte_num + 4) + byte_val(byte_num + 5)).lstrip('0'), 16))
+            x_by = (byte_val(byte_num + 4) + byte_val(byte_num + 5))
             
-            y = s16(int((byte_val(byte_num + 6) + byte_val(byte_num + 7)).lstrip('0'), 16))
+            x_by_nozero = x_by[:-1].lstrip('0')
             
-            z = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            x_byte = x_by_nozero + x_by[-1]
             
+            x = s16(int(x_byte, 16))
+            
+            y_by = (byte_val(byte_num + 6) + byte_val(byte_num + 7))
+            
+            y_by_nz = y_by[:-1].lstrip('0')
+            
+            y_byte = y_by_nz + y_by[-1]
+            
+            y = s16(int(y_byte, 16))
+            
+            z_by = (byte_val(byte_num) + byte_val(byte_num + 1))
+            
+            z_by_nz = z_by[:-1].lstrip('0')
+            
+            z_byte = z_by_nz + z_by[-1]
+            
+            z = s16(int(z_byte, 16))
             
             range_val = s16(int(byte_val(byte_num + 2)[0], 16))
             
@@ -172,7 +213,13 @@ def packet_decoding_odd(number):
             
             y = 'prev'
             
-            z = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            z_by = (byte_val(byte_num) + byte_val(byte_num + 1))
+            
+            z_by_nz = z_by[:-1].lstrip('0')
+            
+            z_byte = z_by_nz + z_by[-1]
+            
+            z = s16(int(z_byte, 16))
             
             range_val = s16(int(byte_val(byte_num + 2)[0], 16))
             
@@ -196,8 +243,6 @@ def packet_decoding_odd(number):
          
     return df_p
 
-
-not_working = packet_decoding_even(5)
 
 #%%
 
