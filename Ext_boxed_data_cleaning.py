@@ -28,9 +28,13 @@ extension = 'txt'
 
 data_file = filebase + filename #+ '.' + extension
 
+#data_file = 'C:\FGM_Extended_Mode\BS_decoded_files\C1_010421_B_BS_decoded.csv'
+
 #%%
 
-df_raw = pd.read_csv(data_file,  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+#df_raw = pd.read_csv(data_file,  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+
+df_raw = pd.read_csv(data_file, names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
 
 #%%
@@ -130,11 +134,11 @@ df_continuous['count'] = df_continuous['count'].astype(float)
 
 packet_starts = df_continuous.loc[df_continuous['count'] == 0].index.tolist()
 
-df_continuous['resolution'] = df_continuous['resolution'].astype(float)
+#df_continuous['resolution'] = df_continuous['resolution'].astype(float)
 
-df_continuous['x'] = df_continuous['x'].astype(float)
+#df_continuous['x'] = df_continuous['x'].astype(float)
 
-df_continuous['y'] = df_continuous['y'].astype(float)
+#df_continuous['y'] = df_continuous['y'].astype(float)
 
 df_continuous['z'] = df_continuous['z'].astype(float)
 
@@ -181,6 +185,8 @@ df_filtered = df_continuous.drop(labels = bad_indices, axis = 0)
 #%%
 
 savename = filebase + filename + '_cleaned'
+
+#savename = 'C1_010421_B_BS_decoded_cleaned'
 
 savetxt = savename + '.txt'
 

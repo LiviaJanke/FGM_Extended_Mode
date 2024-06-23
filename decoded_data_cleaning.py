@@ -32,7 +32,7 @@ data_file = filebase + filename #+ '.' + extension
 
 data_file = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_decoded.csv'
 
-df_raw = pd.read_csv(data_file, skiprows = 1, names = ['reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
+df_raw = pd.read_csv(data_file, skiprows = 1, names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
 df = df_raw
 
@@ -77,7 +77,7 @@ for i in packet_list:
     
     #packet_count = packet['count']
     
-    if packet.loc[0]['reset_vector'] == 'bef ':
+    if packet.loc[0]['x'] == 'bef':
         
         even_packet_nums.append(packet_num)
         
@@ -133,13 +133,13 @@ df_continuous['count'] = df_continuous['count'].astype(float)
 
 packet_starts = df_continuous.loc[df_continuous['count'] == 0].index.tolist()
 
-df_continuous['resolution'] = df_continuous['resolution'].astype(float)
+#df_continuous['resolution'] = df_continuous['resolution'].astype(float)
 
 df_continuous['x'] = df_continuous['x'].astype(float)
 
 df_continuous['y'] = df_continuous['y'].astype(float)
 
-df_continuous['z'] = df_continuous['z'].astype(float)
+#df_continuous['z'] = df_continuous['z'].astype(float)
 
 #%%
 

@@ -71,7 +71,7 @@ def packet_decoding_even(number):
     
     reset_vals = []
     
-    vector_len = 3556
+    vector_len = 3555
     
     offset = low_high[num][0]
     
@@ -79,7 +79,7 @@ def packet_decoding_even(number):
         
         byte_num = int(offset + i)
         
-        if i < 3557:
+        if i < 3552:
             
             x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
@@ -127,11 +127,11 @@ def packet_decoding_even(number):
             
             y = s16(int(y_byte, 16))
 
-            z = 'bef'
+            z = 'af'
             
-            range_val = 'bef'
+            range_val = 'af'
             
-            reset_val = 'bef'
+            reset_val = 'af'
             
         
         x_vals.append(x)
@@ -169,7 +169,7 @@ def packet_decoding_odd(number):
     
     reset_vals = []
     
-    vector_len = 3556
+    vector_len = 3555
     
     offset = low_high[num][0]
     
@@ -209,9 +209,9 @@ def packet_decoding_odd(number):
             
         else:
             
-            x = 'prev'
+            x = 'bef'
             
-            y = 'prev'
+            y = 'bef'
             
             z_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
@@ -318,19 +318,16 @@ for i in packet_range:
     
     even_df = packet_decoding_even(int(i))
     
-    print(i)
     
     all_decoded_dfs.append(even_df)
     
-    print(i)
     
     odd_df = packet_decoding_odd(int(i))
-    
-    print(i)
+
     
     all_decoded_dfs.append(odd_df)
     
-    print(i)
+
 
 #%%
     
@@ -351,9 +348,6 @@ filepath = filebase +'/' + filename +'_decoded' + ext
 all_decoded_df.to_csv(filepath)
 
 #%%
-
-
-data = int('0xffd2', 16)
 
 
 
