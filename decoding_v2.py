@@ -36,26 +36,30 @@ df = df_with_pos.drop('position_code', axis = 1)
 
 #%%
 
-def byte_location(val):
+def s16(val):
     
-    row, col = divmod(val, 16)
+    value = int(val)
     
-    return row, col
+    return -(value & 0x8000) | (value & 0x7fff)
 
 
 def byte_val(val):
     
     div, rem = divmod(val, 16)
     
-    col = rem
+    col = int(rem)
      
-    row = div    
+    row = int(div) 
     
     value = df[col].iloc[row]
     
     return value
 
-def packet_decoding_even(packet):
+
+
+def packet_decoding_even(number):
+    
+    num = int(number)
     
     x_vals = []
     
@@ -67,62 +71,73 @@ def packet_decoding_even(packet):
     
     reset_vals = []
     
-    for i in np.arange(0, len(packet), 8):
+    vector_len = 3556
+    
+    offset = low_high[num][0]
+    
+    for i in np.arange(0, vector_len, 8):
         
-        x = int(packet[i] + packet[i + 1], 16)
+        byte_num = int(offset + i)
+        
+        if i < 3557:
+        
+            x = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            
+            y = s16(int((byte_val(byte_num + 2) + byte_val(byte_num + 3)).lstrip('0'), 16))
+            
+            z = s16(int((byte_val(byte_num + 4) + byte_val(byte_num + 5)).lstrip('0'), 16))
+            
+            print((byte_val(byte_num + 4) + byte_val(byte_num + 5)))
+            
+            print(z)
+            
+            print(byte_num)
+            
+            range_val = s16(int(byte_val(byte_num + 6)[0], 16))
+            
+            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
+            
+        else:
+
+            x = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            
+            y = s16(int((byte_val(byte_num + 2) + byte_val(byte_num + 3)).lstrip('0'), 16))            
+
+            z = 'bef'
+            
+            range_val = 'bef'
+            
+            reset_val = 'bef'
+            
         
         x_vals.append(x)
         
-    for i in np.arange(2, len(packet), 8):
-        
-        y = int(packet[i] + packet[i + 1], 16)
-        
         y_vals.append(y)
-        
-    for i in np.arange(4, len(packet), 8):
-        
-        if i < 3557:
-        
-            z = int(packet[i] + packet[i + 1], 16)
-        
-        else:
-            
-            z = 'bef'
         
         z_vals.append(z)
         
-    for i in np.arange(6, len(packet), 8):
-        
-        if i < 3557:
-        
-            range_val = int(packet[i][0], 16)
-        
-        else:
-            
-            range_val = 'bef'
-        
         range_vals.append(range_val)
-        
-    for i in np.arange(6, len(packet), 8):
-        
-        if i < 3557:
-        
-            reset_val = packet[i][1] + packet[i+1]
-            
-        else: reset_val = 'bef'
         
         reset_vals.append(reset_val)
         
-        
-    return x_vals, y_vals, z_vals, range_vals, reset_vals
-
-#%%
-
-def packet_decoding_odd(packet):
     
-    x_vals = ['prev',]
+    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
     
-    y_vals = ['prev',]
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+         
+    return df_p
+
+
+
+
+
+def packet_decoding_odd(number):
+    
+    num = int(number)
+    
+    x_vals = []
+    
+    y_vals = []
     
     z_vals = []
     
@@ -130,38 +145,59 @@ def packet_decoding_odd(packet):
     
     reset_vals = []
     
-    for i in np.arange(4, len(packet) - 8, 8):
+    vector_len = 3556
+    
+    offset = low_high[num][0]
+    
+    for i in np.arange(0, vector_len, 8):
         
-        x = int(packet[i] + packet[i + 1], 16)
+        byte_num = int(offset + i)
+        
+        if i > 5:
+        
+            x = s16(int((byte_val(byte_num + 4) + byte_val(byte_num + 5)).lstrip('0'), 16))
+            
+            y = s16(int((byte_val(byte_num + 6) + byte_val(byte_num + 7)).lstrip('0'), 16))
+            
+            z = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            
+            
+            range_val = s16(int(byte_val(byte_num + 2)[0], 16))
+            
+            reset_val = byte_val(byte_num + 2)[1] + byte_val(byte_num + 3)
+            
+        else:
+            
+            x = 'prev'
+            
+            y = 'prev'
+            
+            z = s16(int((byte_val(byte_num) + byte_val(byte_num + 1)).lstrip('0'), 16))
+            
+            range_val = s16(int(byte_val(byte_num + 2)[0], 16))
+            
+            reset_val = byte_val(byte_num + 2)[1] + byte_val(byte_num + 3)
+            
         
         x_vals.append(x)
         
-    for i in np.arange(6, len(packet) - 8, 8):
-        
-        y = int(packet[i] + packet[i + 1], 16)
-        
         y_vals.append(y)
-        
-    for i in np.arange(0, len(packet) -8, 8):
-
-        
-        z = int(packet[i] + packet[i + 1], 16)
         
         z_vals.append(z)
         
-    for i in np.arange(0, len(packet) -8, 8):
-        
-        range_val = int(packet[i][0], 16)
-        
         range_vals.append(range_val)
         
-    for i in np.arange(6, len(packet) - 8, 8):
-        
-        reset_val = packet[i][1] + packet[i+1]
-        
         reset_vals.append(reset_val)
-             
-    return x_vals, y_vals, z_vals, range_vals, reset_vals
+        
+    
+    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
+    
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+         
+    return df_p
+
+
+not_working = packet_decoding_even(5)
 
 #%%
 
@@ -186,54 +222,48 @@ num_of_packets = num_of_bytes / 3611
 
 packet_range = np.arange(0, num_of_packets)
 
+packet_lower_indices = np.arange(49, num_of_packets * 3611, 3611) 
 
-packet_lower_indices = np.arange(0, num_of_packets * 3611, 3611) + 49
-
-packet_higher_indices = np.arange(3611 , (num_of_packets * 3611) +1, 3611)
+packet_higher_indices = np.arange(3610, (num_of_packets * 3611) + 500, 3611)
 
 
 low_high = np.column_stack((packet_lower_indices, packet_higher_indices))
 
+
+
 #%%
 
-def get_packet(num):
-    
-    packet = []
+even_dfs = []
 
-    for i in np.arange(int(low_high[num][0]), int(low_high[num][1])):
-        
-        bite = byte_val(i)
-         
-        packet.append(bite)
+for i in packet_range:
     
-    return packet
+    decdf = packet_decoding_even(int(i))
+    
+    even_dfs.append(decdf)
 
+#%%
 
-def decode_packet_even(num):
-    
-    p = get_packet(num)
+even_df = pd.concat(even_dfs)
 
-    x,y,z, resolution, reset = packet_decoding_even(p)
-    
-    df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
-    
-    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']
-    
-    return df_p
+even_df.to_csv('even_decoding_with_index.csv')  
 
-def decode_packet_odd(num):
-    
-    p = get_packet(num)
+#%%
 
-    x,y,z, resolution, reset = packet_decoding_odd(p)
+odd_dfs = []
+
+for i in packet_range:
     
-    df_p = pd.DataFrame(zip(reset, resolution, x, y, z))
-    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']
+    decdf = packet_decoding_odd(int(i))
     
-    
-    return df_p
-    
-    
+    odd_dfs.append(decdf)
+
+#%%
+
+odd_df = pd.concat(odd_dfs)
+
+ 
+#%%
+odd_df.to_csv('odd_decoding_with_index.csv', index = False)
 
 #%%
 
@@ -241,47 +271,27 @@ all_decoded_dfs = []
 
 for i in packet_range:
     
-    even_df = decode_packet_even(int(i))
-
-    odd_df = decode_packet_odd(int(i))
+    even_df = packet_decoding_even(int(i))
+    
+    print(i)
     
     all_decoded_dfs.append(even_df)
     
+    print(i)
+    
+    odd_df = packet_decoding_odd(int(i))
+    
+    print(i)
+    
     all_decoded_dfs.append(odd_df)
+    
+    print(i)
+
+#%%
     
 all_decoded_df = pd.concat(all_decoded_dfs)
 
 
-#even_dfs = []
-
-#for i in packet_range:
-    
-#    decdf = decode_packet_even(int(i))
-    
-#    even_dfs.append(decdf)
-
-
-#even_df = pd.concat(even_dfs)
-
-#even_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
-
-#odd_dfs = []
-
-#for i in packet_range:
-    
-#    decdf = decode_packet_odd(int(i))
-    
-#    odd_dfs.append(decdf)
-
-#odd_df = pd.concat(odd_dfs)
-
-#odd_df.columns = ['reset', 'resolution', 'x', 'y', 'z']
-
-
-
-#even_df.to_csv('even_decoding.csv', index = False)  
-
-#odd_df.to_csv('odd_decoding.csv', index = False)
 
 #%%
 
@@ -293,12 +303,12 @@ ext = '.csv'
 
 filepath = filebase +'/' + filename +'_decoded' + ext
 
-all_decoded_df.to_csv(filepath, index = False)
+all_decoded_df.to_csv(filepath)
 
 #%%
 
 
-
+data = int('0xffd2', 16)
 
 
 

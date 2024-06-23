@@ -30,8 +30,6 @@ data_file = filebase + filename #+ '.' + extension
 
 #%%
 
-data_file = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_decoded.csv'
-
 df_raw = pd.read_csv(data_file,  names = ['count', 'reset_vector', 'resolution', 'x', 'y', 'z'],  on_bad_lines='warn')
 
 
@@ -182,9 +180,7 @@ df_filtered = df_continuous.drop(labels = bad_indices, axis = 0)
 
 #%%
 
-#savename = filebase + filename + '_cleaned'
-
-savename = 'C1_010421_B_BS_decoded_cleaned'
+savename = filebase + filename + '_cleaned'
 
 savetxt = savename + '.txt'
 
@@ -202,7 +198,6 @@ df_filtered.to_csv(savecsv, index=False)
 # or make a data file?
 
 # maybe data file more straightforward
-
 
 
 
