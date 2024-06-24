@@ -52,10 +52,10 @@ del filename
 # decode
 # vector_count = data[0][:]
 # reset_count_h = data[1][:]
-r = data[3][:]
-x = data[4][:]
-y = data[5][:]
-z = data[6][:]
+r = data[2][:]
+x = data[3][:]
+y = data[4][:]
+z = data[5][:]
 del data
 # change to array
 
@@ -107,7 +107,7 @@ ext_exit = datetime.fromisoformat('2001-04-21T02:21:00.000')#.replace(tzinfo=Non
 
 
 # from SATT
-t_spin = 4.007576456877609
+t_spin = 4.007576457
 
 #t_spin = 4.0071
 

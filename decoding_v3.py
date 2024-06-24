@@ -333,6 +333,12 @@ all_decoded_df = pd.concat(all_decoded_dfs)
 
 # filtering for quality and only getting sequential even/odd
 
+valid_nums_even_decoded = []
+
+valid_nums_odd_decoded = []
+
+no_valid_decode = []
+
 all_valid_dfs = []
 
 for i in packet_range:
@@ -349,13 +355,17 @@ for i in packet_range:
         
         all_valid_dfs.append(even_df_i)
         
+        valid_nums_even_decoded.append(i)
+        
     elif ounique < 100:
         
         all_valid_dfs.append(odd_df_i)
         
+        valid_nums_odd_decoded.append(i)
+        
     else:
         
-        print('yikes')
+        no_valid_decode.append(i)
         
 #%%    
     
@@ -364,24 +374,18 @@ all_valid_df = pd.concat(all_valid_dfs)
 
 #%%
 
-sequential_data = all_valid_df.reset_index()
+sequential_data = all_valid_df.reset_index(drop = True)
 
+#%%
+
+bef_indices = sequential_data.loc[sequential_data['x'] == 'bef'].index.tolist()
+
+af_indices = sequential_data.loc[sequential_data['z'] == 'af'].index.tolist()
 
 
 #%%
 
-incomplete_rows = np.arange(444, len(sequential_data), 890)
-
-for i in incomplete_rows:
-    
-    #print(sequential_data.loc[i-1])
-    print(sequential_data.loc[i+1])
-    #print(sequential_data.loc[i+2])
-
-
-#%%
-
-for i in incomplete_rows:
+for i in af_indices:
     
     
     sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
@@ -391,25 +395,29 @@ for i in incomplete_rows:
     sequential_data.loc[i,'z'] = sequential_data.loc[i+1,'z']
     
     
-#%%
 
-for i in incomplete_rows:
-    
-    print(sequential_data.loc[i])
-    print(sequential_data.loc[i+1])
     
 
 #%%
 
 
-df_complete = sequential_data[sequential_data['x'] != "bef"]
+df_complete_indexed = sequential_data.drop(labels = bef_indices, axis = 0)
 
 #%%
 
-for i in incomplete_rows:
-    
-    print(df_complete.loc[i-1])
-    print(df_complete.loc[i])
+
+df_complete_indexed['resolution'] = df_complete_indexed['resolution'].astype(float)
+
+df_complete_indexed['x'] = df_complete_indexed['x'].astype(float)
+
+df_complete_indexed['y'] = df_complete_indexed['y'].astype(float)
+
+df_complete_indexed['z'] = df_complete_indexed['z'].astype(float)
+
+
+#%%
+
+df_complete = df_complete_indexed.reset_index(drop = True)
 
 
 #%%
@@ -424,8 +432,8 @@ filepath = filebase +'/' + filename +'_decoded_filtered_v2' + ext
 
 df_complete.to_csv(filepath)
 
+#%need to add missing data handling
 
-#%%
 
 
 
