@@ -33,7 +33,7 @@ from fgmfiletools import fgmsave
 # filename = 'C1_150605_B_1.RawExtMd'
 # filename = 'C2_150605_B_1.RawExtMd'
 #filepath,filebase,fileext = './020227','C1_020227_ext','txt'
-filepath,filebase,fileext = './testing','C1_020227_ext','txt'
+#filepath,filebase,fileext = './testing','C1_020227_ext','txt'
 #filename = filepath + '/' + filebase + '.' + fileext
 #filename = 'C1_020227_ext.txt'
 
@@ -41,18 +41,21 @@ filepath,filebase,fileext = './testing','C1_020227_ext','txt'
 
 #filename = './Data' + '/' + filebase + '.' + fileext
 
-filename = filepath + '/' + filebase + '.' + fileext
+#filename = filepath + '/' + filebase + '.' + fileext
 
+filebase = 'C1_010421_B_BS_decoded_filtered_v2'
 
-data = read_csv(filename,header=None, skiprows = 1)
+filename = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_decoded_filtered_v2.csv'
+
+data = read_csv(filename, header = None, skiprows = 1)
 del filename
 # decode
 # vector_count = data[0][:]
 # reset_count_h = data[1][:]
-r = data[2][:]
-x = data[3][:]
-y = data[4][:]
-z = data[5][:]
+r = data[3][:]
+x = data[4][:]
+y = data[5][:]
+z = data[6][:]
 del data
 # change to array
 
@@ -74,7 +77,7 @@ def quickplot(titletext,xlabeltext,ylabeltext):
     subplot(5,1,5);plot(t,r,label='range');grid();legend()
     xlabel(xlabeltext)
     suptitle(titletext,y=0.94)
-    savefig(filepath+'/'+titletext+'.png',dpi=150)
+   # savefig(filepath+'/'+titletext+'.png',dpi=150)
     #savefig(titletext+'.png',dpi=150)
     return
 
@@ -87,9 +90,12 @@ quickplot(filebase+'_raw','sample #','count [#]')
 
 #%% timing
 # C1 extended mode period in Feb 02
-ext_entry = datetime.fromisoformat('2002-02-27T23:34:54.000')#.replace(tzinfo=None)
-ext_exit = datetime.fromisoformat('2002-02-28T22:35:00.000')#.replace(tzinfo=None)
+#ext_entry = datetime.fromisoformat('2002-02-27T23:34:54.000')#.replace(tzinfo=None)
+#ext_exit = datetime.fromisoformat('2002-02-28T22:35:00.000')#.replace(tzinfo=None)
 
+
+ext_entry = datetime.fromisoformat('2001-04-20T03:20:54.000')#.replace(tzinfo=None)
+ext_exit = datetime.fromisoformat('2001-04-21T02:21:00.000')#.replace(tzinfo=None)
 
 # C1 extended mode period
 
@@ -101,7 +107,7 @@ ext_exit = datetime.fromisoformat('2002-02-28T22:35:00.000')#.replace(tzinfo=Non
 
 
 # from SATT
-t_spin = 4.0165231
+t_spin = 4.007576456877609
 
 #t_spin = 4.0071
 

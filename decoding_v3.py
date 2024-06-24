@@ -169,7 +169,7 @@ def packet_decoding_odd(number):
     
     reset_vals = []
     
-    vector_len = 3555
+    vector_len = 3551
     
     offset = low_high[num][0]
     
@@ -290,7 +290,7 @@ for i in packet_range:
 
 even_df = pd.concat(even_dfs)
 
-even_df.to_csv('even_decoding_with_index.csv')  
+#even_df.to_csv('even_decoding_with_index.csv')  
 
 #%%
 
@@ -308,7 +308,7 @@ for i in packet_range:
 odd_df = pd.concat(odd_dfs)
 
  
-odd_df.to_csv('odd_decoding_with_index.csv', index = False)
+#odd_df.to_csv('odd_decoding_with_index.csv', index = False)
 
 #%%
 
@@ -334,8 +334,6 @@ for i in packet_range:
 all_decoded_df = pd.concat(all_decoded_dfs)
 
 
-
-#%%
 
 
 
@@ -374,29 +372,53 @@ all_valid_df = pd.concat(all_valid_dfs)
 
 #%%
 
-sequential_data = all_valid_df.reset_index(drop = True)
+sequential_data = all_valid_df.reset_index()
 
 
 
 #%%
 
-incomplete_rows = np.arange(445, len(sequential_data), 890)
+incomplete_rows = np.arange(444, len(sequential_data), 889)
+
+for i in incomplete_rows:
+    
+    #print(sequential_data.loc[i-1])
+    print(sequential_data.loc[i])
+    print(sequential_data.loc[i+1])
 
 
+#%%
 
 for i in incomplete_rows:
     
     
-    sequential_data.loc[i-1,'reset'] = sequential_data.loc[i, 'reset']
+    sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
     
-    sequential_data.loc[i - 1,'resolution'] = sequential_data.loc[i, 'resolution']
+    sequential_data.loc[i,'resolution'] = sequential_data.loc[i+1, 'resolution']
     
-    sequential_data.loc[i-1,'z'] = sequential_data.loc[i,'z']
+    sequential_data.loc[i,'z'] = sequential_data.loc[i+1,'z']
+    
+    
+#%%
+
+for i in incomplete_rows:
+    
+    print(sequential_data.loc[i])
+    print(sequential_data.loc[i+1])
+    
 
 #%%
 
 
 df_complete = sequential_data[sequential_data['x'] != "bef"]
+
+#%%
+
+for i in incomplete_rows:
+    
+    print(df_complete.loc[i-1])
+   # print(df_complete.loc[i])
+
 
 #%%
 
@@ -406,7 +428,7 @@ filename = 'C1_010421_B_BS'
 
 ext = '.csv'
 
-filepath = filebase +'/' + filename +'_decoded_filtered' + ext
+filepath = filebase +'/' + filename +'_decoded_filtered_v2' + ext
 
 df_complete.to_csv(filepath)
 
