@@ -20,7 +20,7 @@ from datetime import date
 
 filebase = 'C:\FGM_Extended_Mode\BS_data_files'
 
-filename = 'C1_010421_B_BS'
+filename = 'C1_010324_B_BS'
 
 ext = '.txt'
 
@@ -129,7 +129,7 @@ def packet_decoding_even(number):
             
             range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
-            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
+            reset_val = s16(int(byte_val(byte_num + 6)[1] + byte_val(byte_num + 7), 16))
             
         else:
 
@@ -225,7 +225,7 @@ def packet_decoding_odd(number):
             
             range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
-            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
+            reset_val = s16(int(byte_val(byte_num + 6)[1] + byte_val(byte_num + 7), 16))
             
         else:
             
@@ -243,7 +243,7 @@ def packet_decoding_odd(number):
             
             range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
-            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
+            reset_val = s16(int(byte_val(byte_num + 6)[1] + byte_val(byte_num + 7), 16))
             
         
         x_vals.append(x)
@@ -266,69 +266,6 @@ def packet_decoding_odd(number):
 
 
 
-
-
-#%%
-
-even_dfs = []
-
-for i in packet_range:
-    
-    decdf = packet_decoding_even(int(i))
-    
-    even_dfs.append(decdf)
-
-#%%
-
-even_df = pd.concat(even_dfs)
-
-#even_df.to_csv('even_decoding_with_index.csv')  
-
-#%%
-
-odd_dfs = []
-
-for i in packet_range:
-    
-    decdf = packet_decoding_odd(int(i))
-    
-    odd_dfs.append(decdf)
-
-#%%
-
-
-odd_df = pd.concat(odd_dfs)
-
- 
-#odd_df.to_csv('odd_decoding_with_index.csv', index = False)
-
-#%%
-
-all_decoded_dfs = []
-
-for i in packet_range:
-    
-    even_df = packet_decoding_even(int(i))
-    
-    
-    all_decoded_dfs.append(even_df)
-    
-    
-    odd_df = packet_decoding_odd(int(i))
-
-    
-    all_decoded_dfs.append(odd_df)
-    
-
-
-#%%
-    
-all_decoded_df = pd.concat(all_decoded_dfs)
-
-
-
-
-
 #%%
 
 # filtering for quality and only getting sequential even/odd
@@ -345,9 +282,13 @@ for i in packet_range:
     
     even_df_i = packet_decoding_even(int(i))
     
+    even_df_i['reset'] = even_df_i['reset'].astype(str)
+    
     ecount, eunique, etop, efreq = even_df_i['reset'].describe()
     
     odd_df_i = packet_decoding_odd(int(i))
+    
+    odd_df_i['reset'] = odd_df_i['reset'].astype(str)
     
     ocount, ounique, otop, ofreq = odd_df_i['reset'].describe()
     
@@ -405,6 +346,7 @@ df_complete_indexed = sequential_data.drop(labels = bef_indices, axis = 0)
 
 #%%
 
+df_complete_indexed['reset'] = df_complete_indexed['reset'].astype(float)
 
 df_complete_indexed['resolution'] = df_complete_indexed['resolution'].astype(float)
 
@@ -413,6 +355,12 @@ df_complete_indexed['x'] = df_complete_indexed['x'].astype(float)
 df_complete_indexed['y'] = df_complete_indexed['y'].astype(float)
 
 df_complete_indexed['z'] = df_complete_indexed['z'].astype(float)
+
+#%%
+
+reset_vecs = df_complete_indexed['reset']
+
+plt.plot(reset_vecs, linewidth = 0, marker = '.')
 
 
 #%%
@@ -424,7 +372,6 @@ df_complete = df_complete_indexed.reset_index(drop = True)
 
 filebase = 'C:\FGM_Extended_Mode\BS_decoded_files'
 
-filename = 'C1_010421_B_BS'
 
 ext = '.csv'
 
