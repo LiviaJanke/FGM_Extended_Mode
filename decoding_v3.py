@@ -34,6 +34,29 @@ df = df_with_pos.drop('position_code', axis = 1)
 
 # total length of 3611
 
+
+
+#%%
+
+#number of empties
+
+nans = np.sum(df.isna().sum())
+
+#total_bytes
+
+rows = len(df[0])
+
+columns = len(df.iloc[0])
+
+num_of_bytes = (rows * columns) - nans
+
+
+# packet separation
+
+num_of_packets = num_of_bytes / 3611
+
+packet_range = np.arange(0, num_of_packets)
+
 #%%
 
 def s16(val):
@@ -71,15 +94,14 @@ def packet_decoding_even(number):
     
     reset_vals = []
     
-    vector_len = 3555
     
-    offset = low_high[num][0]
+    offset = 3611 * num
     
-    for i in np.arange(0, vector_len, 8):
+    for i in np.arange(49, 3605, 8):
         
         byte_num = int(offset + i)
         
-        if i < 3551:
+        if i < 3601:
             
             x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
@@ -169,17 +191,15 @@ def packet_decoding_odd(number):
     
     reset_vals = []
     
-    vector_len = 3551
+    offset = 3611 * num
     
-    offset = low_high[num][0]
-    
-    for i in np.arange(0, vector_len, 8):
+    for i in np.arange(45, 3605, 8):
         
         byte_num = int(offset + i)
         
-        if i > 5:
+        if i > 52:
         
-            x_by = (byte_val(byte_num + 4) + byte_val(byte_num + 5))
+            x_by = (byte_val(byte_num) + byte_val(byte_num + 1))
             
             x_by_nozero = x_by[:-1].lstrip('0')
             
@@ -187,7 +207,7 @@ def packet_decoding_odd(number):
             
             x = s16(int(x_byte, 16))
             
-            y_by = (byte_val(byte_num + 6) + byte_val(byte_num + 7))
+            y_by = (byte_val(byte_num + 2) + byte_val(byte_num + 3))
             
             y_by_nz = y_by[:-1].lstrip('0')
             
@@ -195,7 +215,7 @@ def packet_decoding_odd(number):
             
             y = s16(int(y_byte, 16))
             
-            z_by = (byte_val(byte_num) + byte_val(byte_num + 1))
+            z_by = (byte_val(byte_num + 4) + byte_val(byte_num + 5))
             
             z_by_nz = z_by[:-1].lstrip('0')
             
@@ -203,9 +223,9 @@ def packet_decoding_odd(number):
             
             z = s16(int(z_byte, 16))
             
-            range_val = s16(int(byte_val(byte_num + 2)[0], 16))
+            range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
-            reset_val = byte_val(byte_num + 2)[1] + byte_val(byte_num + 3)
+            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
             
         else:
             
@@ -213,7 +233,7 @@ def packet_decoding_odd(number):
             
             y = 'bef'
             
-            z_by = (byte_val(byte_num) + byte_val(byte_num + 1))
+            z_by = (byte_val(byte_num + 4) + byte_val(byte_num + 5))
             
             z_by_nz = z_by[:-1].lstrip('0')
             
@@ -221,9 +241,9 @@ def packet_decoding_odd(number):
             
             z = s16(int(z_byte, 16))
             
-            range_val = s16(int(byte_val(byte_num + 2)[0], 16))
+            range_val = s16(int(byte_val(byte_num + 6)[0], 16))
             
-            reset_val = byte_val(byte_num + 2)[1] + byte_val(byte_num + 3)
+            reset_val = byte_val(byte_num + 6)[1] + byte_val(byte_num + 7)
             
         
         x_vals.append(x)
@@ -244,35 +264,7 @@ def packet_decoding_odd(number):
     return df_p
 
 
-#%%
 
-#number of empties
-
-nans = np.sum(df.isna().sum())
-
-#total_bytes
-
-rows = len(df[0])
-
-columns = len(df.iloc[0])
-
-num_of_bytes = (rows * columns) - nans
-
-
-# packet separation
-
-num_of_packets = num_of_bytes / 3611
-
-#%%
-
-packet_range = np.arange(0, num_of_packets)
-
-packet_lower_indices = np.arange(49, num_of_packets * 3611, 3611) 
-
-packet_higher_indices = np.arange(3610, (num_of_packets * 3611) + 500, 3611)
-
-
-low_high = np.column_stack((packet_lower_indices, packet_higher_indices))
 
 
 
@@ -378,13 +370,13 @@ sequential_data = all_valid_df.reset_index()
 
 #%%
 
-incomplete_rows = np.arange(444, len(sequential_data), 889)
+incomplete_rows = np.arange(444, len(sequential_data), 890)
 
 for i in incomplete_rows:
     
     #print(sequential_data.loc[i-1])
-    print(sequential_data.loc[i])
     print(sequential_data.loc[i+1])
+    #print(sequential_data.loc[i+2])
 
 
 #%%
@@ -417,7 +409,7 @@ df_complete = sequential_data[sequential_data['x'] != "bef"]
 for i in incomplete_rows:
     
     print(df_complete.loc[i-1])
-   # print(df_complete.loc[i])
+    print(df_complete.loc[i])
 
 
 #%%
