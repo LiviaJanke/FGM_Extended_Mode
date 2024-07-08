@@ -168,11 +168,173 @@ packet_range = np.arange(0, num_of_packets)
 
 #%%
 
+def packet_decoding_even(number):
+    
+    packig = ext_bytes[number]
+    
+    x_vals = []
+    
+    y_vals = []
+    
+    z_vals = []
+    
+    range_vals = []
+    
+    reset_vals = []
+    
+    
+    for i in np.arange(34, 3590, 8):
+        
+        if i < 3601:
+            
+            x = packig[i:i+2]
+            
+            y = packig[i+2:i+4]
+            
+            z = packig[i+4:i+6]
+            
+            range_val = packig[i+6][0]
+            
+            reset_val = packig[i+6][0] + packig[i+7]
+            
+        else:
+
+            x= packig[i:i+2]
+            
+            y = packig[i+2:i+4]
+
+            z = 'af'
+            
+            range_val = 'af'
+            
+            reset_val = 'af'
+            
+        
+        x_vals.append(x)
+        
+        y_vals.append(y)
+        
+        z_vals.append(z)
+        
+        range_vals.append(range_val)
+        
+        reset_vals.append(reset_val)
+        
+    
+    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
+    
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+         
+    return df_p
 
 
+def packet_decoding_odd(number):
+    
+    packig = ext_bytes[number]
+    
+    x_vals = []
+    
+    y_vals = []
+    
+    z_vals = []
+    
+    range_vals = []
+    
+    reset_vals = []
     
     
+    for i in np.arange(34, 3590, 8):
+        
+        if i > 41:
+        
+            x= packig[i:i+2]
+            
+            y = packig[i+2:i+4]
+            
+            z = packig[i+4:i+6]
+            
+            range_val = packig[i+6][0]
+            
+            reset_val = packig[i+6][0] + packig[i+7]
+            
+        else:
+            
+            x = 'bef'
+            
+            y = 'bef'
+            
+            z = packig[i+4:i+6]
+            
+            range_val = packig[i+6][0]
+            
+            reset_val = packig[i+6][0] + packig[i+7]
+
     
+        x_vals.append(x)
+        
+        y_vals.append(y)
+        
+        z_vals.append(z)
+        
+        range_vals.append(range_val)
+        
+        reset_vals.append(reset_val)
+        
+    
+    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
+    
+    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+         
+    return df_p
+
+
+#%%
+
+    
+
+# filtering for quality and only getting sequential even/odd
+
+valid_nums_even_decoded = []
+
+valid_nums_odd_decoded = []
+
+no_valid_decode = []
+
+all_valid_dfs = []
+
+for i in packet_range:
+    
+    even_df_i = packet_decoding_even(int(i))
+    
+    even_df_i['reset'] = even_df_i['reset'].astype(str)
+    
+    ecount, eunique, etop, efreq = even_df_i['reset'].describe()
+    
+    odd_df_i = packet_decoding_odd(int(i))
+    
+    odd_df_i['reset'] = odd_df_i['reset'].astype(str)
+    
+    ocount, ounique, otop, ofreq = odd_df_i['reset'].describe()
+    
+    if eunique < 100:
+        
+        all_valid_dfs.append(even_df_i)
+        
+        valid_nums_even_decoded.append(i)
+        
+    elif ounique < 100:
+        
+        all_valid_dfs.append(odd_df_i)
+        
+        valid_nums_odd_decoded.append(i)
+        
+    else:
+        
+        no_valid_decode.append(i)
+        
+#%%    
+    
+all_valid_df = pd.concat(all_valid_dfs)
     
     
     
