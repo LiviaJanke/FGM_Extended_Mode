@@ -130,14 +130,16 @@ def quicksave(filename,t,x,y,z,r):
     for i in range(0,len(t)):
         # aline = t[i].isoformat(timespec='milliseconds')[0:23] + 'Z'
         aline = t[i].isoformat(timespec='milliseconds')
-        aline += ", {0: 5d}, {1: 5d}, {2: 5d}, {3: 1d}\n".format(x[i],y[i],z[i],r[i])
+        aline += ", {0: 5f}, {1: 5f}, {2: 5f}, {3: 1f}\n".format(x[i],y[i],z[i],r[i])
         file.write(aline)
     file.close()
     return
 
-filename = filepath + '/' + filebase + '_raw_timestamped.txt'
+#filename = filepath + '/' + filebase + '_raw_timestamped.txt'
 
 #filename = filebase + '_raw_timestamped.txt'
+
+filename = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS_raw_timestamped.txt'
 
 quicksave(filename,t,x,y,z,r)
 del filename
@@ -161,10 +163,10 @@ def quickopen(filename):
         alist = aline.split(',')
         timestring = alist[0][0:len(alist[0])-1]
         t.append(datetime.fromisoformat(timestring).replace(tzinfo=None))
-        x.append(int(alist[1]))
-        y.append(int(alist[2]))
-        z.append(int(alist[3]))
-        r.append(int(alist[4]))
+        x.append(int(float(alist[1])))
+        y.append(int(float(alist[2])))
+        z.append(int(float(alist[3])))
+        r.append(int(float(alist[4])))
 
     t = array(t)
     x = array(x)
@@ -173,8 +175,14 @@ def quickopen(filename):
     r = array(r)
     return t,x,y,z,r
 
-filename = filepath + '/' + filebase + '_raw_timestamped.txt'
-#filename = filebase + '_raw_timestamped.txt'
+#filename = filepath + '/' + filebase + '_raw_timestamped.txt'
+
+
+filebase = 'C:/FGM_Extended_Mode/BS_decoded_files/C1_010421_B_BS'
+
+filename = filebase + '_raw_timestamped.txt'
+
+
 t,x,y,z,r = quickopen(filename)
 del filename
 quickplot(filebase+'_raw_timestamped_despiked','time [UTC]','count [#]')
@@ -238,7 +246,10 @@ rotate_SCS()
 quickplot(filebase+'_rotated_scs','time [UTC]','[nT]')
 
 #%% save data in 'fgm dp' format
-savename = filepath + '/' + filebase + '_calibrated.txt'
+#savename = filepath + '/' + filebase + '_calibrated.txt'
+
+savename = filebase + '_calibrated.txt'
+
 fgmsave(savename,t,x,y,z)
             
             

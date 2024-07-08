@@ -20,7 +20,7 @@ from datetime import date
 
 filebase = 'C:\FGM_Extended_Mode\BS_data_files'
 
-filename = 'C1_010326_B_BS'
+filename = 'C1_010421_B_BS'
 
 ext = '.txt'
 
