@@ -269,6 +269,8 @@ craft_dumpdate = 'C1_020227_B'
 
 BS_filename = craft_dumpdate +'.BS'
 
+BS_file_location = 'path' + BS_filename
+
 file = open(BS_filename,"rb")
 
 # this is the file dumped on 020227
@@ -476,42 +478,7 @@ filepath = filebase +'/' + craft_dumpdate + '_clean_decode' + ext
 
 df_complete.to_csv(filepath)
 
-#%%
 
-#timestamping code stuff
-
-i=0
-start=0
-while i<(len(packets)-1):
-    if (packets[i+1].reset)<(packets[i].reset):
-        resets=[p.reset for p in packets[start:i+1]]
-        listmicros=[p.micros for p in packets[start:i+1]]
-        slope,intercept,rvalue, pvalue,stderr=linregress(resets,listmicros)
-        regressionvalues=[p.reset*slope+intercept for p in packets[start:i+1]]
-
-        print(min(p.scet for p in packets[start:i+1]).strftime("%Y-%m-%dT%H:%M:%SZ"),max(p.scet for p in packets[start:i+1]).strftime("%Y-%m-%dT%H:%M:%SZ"),sep=" ",end=" ")
-        print("{:04X}".format(min(p.reset for p in packets[start:i+1])),"{:04X}".format(max(p.reset for p in packets[start:i+1])),end=" ")
-        print("{:23.15f}".format(slope),"{:19.2f}".format(intercept))
-        start=i+1
-    i+=1
-    
-
-
-resets=[p.reset for p in packets[start:i+1]]
-size=[p.size for p in packets[start:i+1]]
-listmicros=[p.micros for p in packets[start:i+1]]
-slope,intercept,rvalue, pvalue,stderr=linregress(resets,listmicros)
-regressionvalues=[p.reset*slope+intercept for p in packets[start:i+1]]    
-contents = [p.payload for p in packets[start:i+1]]
-status = [p.status for p in packets[start:i+1]]
-
-counts = [p.pktcnt for p in packets[start:i+1]]
-
-
-print(min(p.scet for p in packets[start:i+1]).strftime("%Y-%m-%dT%H:%M:%SZ"),max(p.scet for p in packets[start:i+1]).strftime("%Y-%m-%dT%H:%M:%SZ"),sep=" ",end=" ")
-print("{:04X}".format(min(p.reset for p in packets[start:i+1])),"{:04X}".format(max(p.reset for p in packets[start:i+1])),end=" ")
-print("{:23.15f}".format(slope),"{:19.2f}".format(intercept))
-    
     
     
     
