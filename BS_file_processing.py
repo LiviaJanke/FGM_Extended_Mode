@@ -5,6 +5,9 @@ Created on Mon Jul  8 09:32:16 2024
 @author: Livia
 """
 
+
+# Importing things
+
 import numpy as np
 
 import pandas as pd
@@ -12,6 +15,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import datetime
+
+#%%
+
+# Currently uneeded imports
 
 from datetime import date
 
@@ -26,11 +33,16 @@ from datetime import datetime,timedelta
 from scipy.stats import linregress
 import sys
 
+#%%
+
+# Defining things
+
 # ID definitions
 
 validphid=(0x1F,0x47,0x6F,0x97,0x26,0x4E,0x76,0x9E,0x2D,0x55,0x7D,0xA5)
 sciphid=(0x1F,0x47,0x6F,0x97,0x26,0x4E,0x76,0x9E)
 fgmhkphid=(0x2D,0x55,0x7D,0xA5)
+
 
 # Classes
 
@@ -69,67 +81,6 @@ class packet():
     def __str__(self):
         return("{:7s}".format("#"+str(self.pktcnt))+" | "+" ".join('{:02X}'.format(n) for n in self.cdds)+" | "+" ".join('{:02X}'.format(n) for n in self.payload[0:30]))
 
-
-
-    
-    
-
-class odd_ext_packet():
-    
-    def __init__(self,d):
-        
-        self.pcktheader = d[0:34]
-        
-        self.prev = d[34:42]
-        
-        self.vectors = d[42:3590]
-        
-        self.end_str = d[3590:]
-    
-    
-    def __str__(self):
-        
-        return('odd packet')        
-        
-
-
-
-
-class even_ext_packet():
-    
-    def __init__(self,d):
-        
-        self.pcktheader = d[0:34]
-        
-        self.vectors = d[34:3586]
-        
-        self.partial = d[3586:3590]
-        
-        self.end_str = d[3590:].hex()
-        
-        self.end_vals=int.from_bytes(d[3590:],"big")
-        
-    
-    def __str__(self):
-        
-        return('even packet')
-    
-class ext_vector():
-    
-    def __init__(self,d):
-        
-        self.x = int.from_bytes(d[0:2], 'big')
-
-        self.y = int.from_bytes(d[2:4], 'big')
-        
-        self.z = int.from_bytes(d[4:6], 'big')
-        
-        self.range = str(d[6])[0]
-        
-        self.reset = str(d[6])[1] + str(d[7])
-    
-    def __str__(self):
-        return(self.x, self.y, self.z, self.range, self.reset)
 
 
 # Functions
@@ -265,6 +216,97 @@ def packet_decoding_odd(number):
     return df_p
 
 
+def quickplot(titletext,xlabeltext,ylabeltext):
+    subplots(5,1,sharex=True,height_ratios=[2,2,2,2,1])
+    subplot(5,1,1);plot(t,x,label='x');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,2);plot(t,y,label='y');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,3);plot(t,z,label='z');grid();legend();ylabel(ylabeltext)
+    b = sqrt(x**2+y**2+z**2)
+    subplot(5,1,4);plot(t,b,label='B');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,5);plot(t,r,label='range');grid();legend()
+    xlabel(xlabeltext)
+    suptitle(titletext,y=0.94)
+    return
+
+def quicksave(filename,t,x,y,z,r):
+    file = open(filename,'w')
+    for i in range(0,len(t)):
+        # aline = t[i].isoformat(timespec='milliseconds')[0:23] + 'Z'
+        aline = t[i].isoformat(timespec='milliseconds')
+        aline += ", {0: 5f}, {1: 5f}, {2: 5f}, {3: 1f}\n".format(x[i],y[i],z[i],r[i])
+        file.write(aline)
+    file.close()
+    return
+
+def make_t():
+    t = []
+    for i in range(0,len(x)):
+        t.append(ext_entry + timedelta(seconds=i*t_spin))
+    print('Last vector time {}'.format(t[len(t)-1]))
+    print('Ext Exit time {}'.format(ext_exit))
+    print('Difference {}'.format(ext_exit - t[len(t)-1]))
+    return t
+
+
+def quickopen(filename):
+    lines = [] 
+    with open(filename) as f:
+        for row in f:
+            lines.append(row)    
+        
+    t = []
+    x = []
+    y = []
+    z = []
+    r = []
+    for i in range(0,len(lines)):
+        aline = lines[i]
+        alist = aline.split(',')
+        timestring = alist[0][0:len(alist[0])-1]
+        t.append(datetime.fromisoformat(timestring).replace(tzinfo=None))
+        x.append(int(float(alist[1])))
+        y.append(int(float(alist[2])))
+        z.append(int(float(alist[3])))
+        r.append(int(float(alist[4])))
+
+    t = array(t)
+    x = array(x)
+    y = array(y)
+    z = array(z)
+    r = array(r)
+    return t,x,y,z,r
+
+
+def apply_calparams():
+    global x,y,z
+    for i in range(0,len(t)):
+        Ox = calparams['x_offsets'][r[i]-2]
+        Gx = calparams['x_gains'][r[i]-2]
+        Gyz = calparams['yz_gains'][r[i]-2]
+        x[i] = (x[i] - Ox) / Gx
+        y[i] = y[i] / Gyz
+        z[i] = z[i] / Gyz
+    return
+
+
+def FGMEXT_to_SCS():
+    global x,y,z
+    zSCS = copy(x)
+    xSCS = copy(-y)
+    ySCS = copy(-z)
+    x = xSCS
+    y = ySCS
+    z = zSCS
+    return
+
+def rotate_SCS():
+    global x,y,z
+    degrees = 146.5
+    theta = 2*pi*degrees/360
+    xx,yy = copy(x),copy(y)
+    x = xx*cos(theta) - yy*sin(theta)
+    y = xx*sin(theta) + yy*cos(theta)
+    return
 
     
 #%%
@@ -279,9 +321,7 @@ year = '2001'
 month = '03'
 day = '24'
 
-
 dumpdate = '010324' # in format yymmdd
-
 
 code = '_B' # Can also be _K for CD data or _A for 1 day pull data 
 
@@ -297,6 +337,13 @@ datadate = '010322'
 t_spin = 4.007576457
 
 
+# C1 cal file for 2002-02-27 to 28
+calparams = {'x_offsets':   [-2.737,0,0,0,0,0],\
+             'x_gains':     [0.95026,1,1,1,1,1],\
+             'yz_gains':    [(0.95260+0.96908)/2,1,1,1,1,1]}
+
+
+
 
 #%%
 
@@ -304,31 +351,23 @@ folder =  year + '_' + craft + '/'
 
 BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' + folder
 
-
-
 BS_filename = craft + '_' + dumpdate + code + '.BS'
 
 BS_file_location = BS_filepath + BS_filename
 
 file = open(BS_file_location,"rb")
 
-# this is the file dumped on 020227
-# contains data from 2002-02-27T01:19:54.000Z Entry to 2002-02-27T08:25:54.000Z Exit
-# data len  7.1 hours 
-# plus an MSA dump (BM1)
-# total num of packets in file is 2931
+# this is the entire BS file retrieved on the dump date, including Burst Science data 
 
 # D Burst Science packets have size 2232
 
-# Normal Science and Data Dump both have size 3596
-
+# Normal Science and Data Dump (aka Extended Mode ?) both have size 3596
 
 
 data=bytearray(file.read())
 file.close()
 datalen=len(data)    
     
-
 
 packets=[]
 offset=0
@@ -341,10 +380,6 @@ while True:
     if offset>=datalen:
         break
     
-
-
-
-#%%
 
 del data
 
@@ -364,7 +399,7 @@ for i in packets:
         
         other_packets.append(i)
 
-#%%
+
 
 del packets 
 del other_packets
@@ -381,9 +416,6 @@ for i in ext_packets:
 
 
 
-
-#%%
-
 num_of_packets = len(ext_bytes) 
 
 packet_range = np.arange(0, num_of_packets)
@@ -392,7 +424,6 @@ packet_range = np.arange(0, num_of_packets)
 
 #%%
 
-    
 
 # filtering for quality and only getting sequential even/odd
 
@@ -520,103 +551,6 @@ del filepath
 
 # timestamping and scaling decoded file
 
-# functions
-
-def quickplot(titletext,xlabeltext,ylabeltext):
-    subplots(5,1,sharex=True,height_ratios=[2,2,2,2,1])
-    subplot(5,1,1);plot(t,x,label='x');grid();legend();ylabel(ylabeltext)
-    subplot(5,1,2);plot(t,y,label='y');grid();legend();ylabel(ylabeltext)
-    subplot(5,1,3);plot(t,z,label='z');grid();legend();ylabel(ylabeltext)
-    b = sqrt(x**2+y**2+z**2)
-    subplot(5,1,4);plot(t,b,label='B');grid();legend();ylabel(ylabeltext)
-    subplot(5,1,5);plot(t,r,label='range');grid();legend()
-    xlabel(xlabeltext)
-    suptitle(titletext,y=0.94)
-    return
-
-def quicksave(filename,t,x,y,z,r):
-    file = open(filename,'w')
-    for i in range(0,len(t)):
-        # aline = t[i].isoformat(timespec='milliseconds')[0:23] + 'Z'
-        aline = t[i].isoformat(timespec='milliseconds')
-        aline += ", {0: 5f}, {1: 5f}, {2: 5f}, {3: 1f}\n".format(x[i],y[i],z[i],r[i])
-        file.write(aline)
-    file.close()
-    return
-
-def make_t():
-    t = []
-    for i in range(0,len(x)):
-        t.append(ext_entry + timedelta(seconds=i*t_spin))
-    print('Last vector time {}'.format(t[len(t)-1]))
-    print('Ext Exit time {}'.format(ext_exit))
-    print('Difference {}'.format(ext_exit - t[len(t)-1]))
-    return t
-
-
-def quickopen(filename):
-    lines = [] 
-    with open(filename) as f:
-        for row in f:
-            lines.append(row)    
-        
-    t = []
-    x = []
-    y = []
-    z = []
-    r = []
-    for i in range(0,len(lines)):
-        aline = lines[i]
-        alist = aline.split(',')
-        timestring = alist[0][0:len(alist[0])-1]
-        t.append(datetime.fromisoformat(timestring).replace(tzinfo=None))
-        x.append(int(float(alist[1])))
-        y.append(int(float(alist[2])))
-        z.append(int(float(alist[3])))
-        r.append(int(float(alist[4])))
-
-    t = array(t)
-    x = array(x)
-    y = array(y)
-    z = array(z)
-    r = array(r)
-    return t,x,y,z,r
-
-
-def apply_calparams():
-    global x,y,z
-    for i in range(0,len(t)):
-        Ox = calparams['x_offsets'][r[i]-2]
-        Gx = calparams['x_gains'][r[i]-2]
-        Gyz = calparams['yz_gains'][r[i]-2]
-        x[i] = (x[i] - Ox) / Gx
-        y[i] = y[i] / Gyz
-        z[i] = z[i] / Gyz
-    return
-
-
-def FGMEXT_to_SCS():
-    global x,y,z
-    zSCS = copy(x)
-    xSCS = copy(-y)
-    ySCS = copy(-z)
-    x = xSCS
-    y = ySCS
-    z = zSCS
-    return
-
-def rotate_SCS():
-    global x,y,z
-    degrees = 146.5
-    theta = 2*pi*degrees/360
-    xx,yy = copy(x),copy(y)
-    x = xx*cos(theta) - yy*sin(theta)
-    y = xx*sin(theta) + yy*cos(theta)
-    return
-
-#%%
-
-
 r = df_complete['resolution']
 x = df_complete['x']
 y = df_complete['y']
@@ -649,7 +583,6 @@ quicksave(filename,t,x,y,z,r)
 
 t,x,y,z,r = quickopen(filename)
 
-
 quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]')
 
 
@@ -663,15 +596,11 @@ z = z * (2*64/2**15) * 4**(r-2) * (pi/4)
 
 quickplot(name +'_scaled','time [UTC]','[nT]')
     
+# Does scaling also need to be made more versatile to apply to all ranges?
 
 #%% apply approximate cal using orbit cal see notes 30-Jan-24
 
-# C1 cal file for 2002-02-27 to 28
-calparams = {'x_offsets':   [-2.737,0,0,0,0,0],\
-             'x_gains':     [0.95026,1,1,1,1,1],\
-             'yz_gains':    [(0.95260+0.96908)/2,1,1,1,1,1]}
-
-
+# May need to change cal params in start of script
 
 
 apply_calparams()
@@ -679,14 +608,11 @@ quickplot(name+'_calibrated','time [UTC]','[nT]')
     
     
 #%%
-    
-
 
 FGMEXT_to_SCS()
 quickplot(name +'_nominal_scs','time [UTC]','[nT]')
 
 #%%
-
 
 rotate_SCS()
 quickplot(name +'_rotated_scs','time [UTC]','[nT]')
@@ -697,6 +623,10 @@ savename = filebase_cal +  '/' + name + '_calibrated.txt'
 
 fgmsave(savename,t,x,y,z)
     
+
+#%%
+
+print('saved as fgm dp format')
     
     
     
