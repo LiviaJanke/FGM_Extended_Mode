@@ -17,6 +17,10 @@ from datetime import date
 
 from fgmfiletools import fgmsave, fgmopen_cef, fgmopen_dp, fgmopen
 
+from pandas import read_csv
+from matplotlib.pyplot import savefig,suptitle,xlabel,ylabel,plot,grid,legend,subplot,subplots
+from datetime import datetime,timedelta
+from numpy import sqrt,array,delete,zeros,size,pi,copy,sin,cos
 
 from datetime import datetime,timedelta
 from scipy.stats import linregress
@@ -265,13 +269,48 @@ def packet_decoding_odd(number):
     
 #%%
 
-craft_dumpdate = 'C1_020227_B'
+# Change here to desired spacecraft and dump date 
 
-BS_filename = craft_dumpdate +'.BS'
+craft = 'C1'
 
-BS_file_location = 'path' + BS_filename
+# Time of data dump
 
-file = open(BS_filename,"rb")
+year = '2001'
+month = '03'
+day = '24'
+
+
+dumpdate = '010324' # in format yymmdd
+
+
+code = '_B' # Can also be _K for CD data or _A for 1 day pull data 
+
+# Times at which spacecraft entered and left extended mode
+
+
+ext_entry = datetime.fromisoformat('2001-03-22T14:15:54.000')
+ext_exit = datetime.fromisoformat('2001-03-23T13:16:00.000')
+
+datadate = '010322'
+
+# from SATT
+t_spin = 4.007576457
+
+
+
+#%%
+
+folder =  year + '_' + craft + '/'
+
+BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' + folder
+
+
+
+BS_filename = craft + '_' + dumpdate + code + '.BS'
+
+BS_file_location = BS_filepath + BS_filename
+
+file = open(BS_file_location,"rb")
 
 # this is the file dumped on 020227
 # contains data from 2002-02-27T01:19:54.000Z Entry to 2002-02-27T08:25:54.000Z Exit
@@ -465,32 +504,198 @@ plt.plot(reset_vecs, linewidth = 0, marker = '.')
 
 df_complete = df_complete_indexed.reset_index(drop = True)
 
-
 #%%
 
-filebase = 'C:\FGM_Extended_Mode\BS_decoded_files'
-
-
+filebase_decoded = 'C:/FGM_Extended_Mode/BS_ext_decoded_files'
 
 ext = '.csv'
 
-filepath = filebase +'/' + craft_dumpdate + '_clean_decode' + ext
+filepath = filebase_decoded +'/' + craft + '_' + dumpdate + code + '_clean_decode' + ext
 
 df_complete.to_csv(filepath)
 
+del filepath
 
+#%%
+
+# timestamping and scaling decoded file
+
+# functions
+
+def quickplot(titletext,xlabeltext,ylabeltext):
+    subplots(5,1,sharex=True,height_ratios=[2,2,2,2,1])
+    subplot(5,1,1);plot(t,x,label='x');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,2);plot(t,y,label='y');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,3);plot(t,z,label='z');grid();legend();ylabel(ylabeltext)
+    b = sqrt(x**2+y**2+z**2)
+    subplot(5,1,4);plot(t,b,label='B');grid();legend();ylabel(ylabeltext)
+    subplot(5,1,5);plot(t,r,label='range');grid();legend()
+    xlabel(xlabeltext)
+    suptitle(titletext,y=0.94)
+    return
+
+def quicksave(filename,t,x,y,z,r):
+    file = open(filename,'w')
+    for i in range(0,len(t)):
+        # aline = t[i].isoformat(timespec='milliseconds')[0:23] + 'Z'
+        aline = t[i].isoformat(timespec='milliseconds')
+        aline += ", {0: 5f}, {1: 5f}, {2: 5f}, {3: 1f}\n".format(x[i],y[i],z[i],r[i])
+        file.write(aline)
+    file.close()
+    return
+
+def make_t():
+    t = []
+    for i in range(0,len(x)):
+        t.append(ext_entry + timedelta(seconds=i*t_spin))
+    print('Last vector time {}'.format(t[len(t)-1]))
+    print('Ext Exit time {}'.format(ext_exit))
+    print('Difference {}'.format(ext_exit - t[len(t)-1]))
+    return t
+
+
+def quickopen(filename):
+    lines = [] 
+    with open(filename) as f:
+        for row in f:
+            lines.append(row)    
+        
+    t = []
+    x = []
+    y = []
+    z = []
+    r = []
+    for i in range(0,len(lines)):
+        aline = lines[i]
+        alist = aline.split(',')
+        timestring = alist[0][0:len(alist[0])-1]
+        t.append(datetime.fromisoformat(timestring).replace(tzinfo=None))
+        x.append(int(float(alist[1])))
+        y.append(int(float(alist[2])))
+        z.append(int(float(alist[3])))
+        r.append(int(float(alist[4])))
+
+    t = array(t)
+    x = array(x)
+    y = array(y)
+    z = array(z)
+    r = array(r)
+    return t,x,y,z,r
+
+
+def apply_calparams():
+    global x,y,z
+    for i in range(0,len(t)):
+        Ox = calparams['x_offsets'][r[i]-2]
+        Gx = calparams['x_gains'][r[i]-2]
+        Gyz = calparams['yz_gains'][r[i]-2]
+        x[i] = (x[i] - Ox) / Gx
+        y[i] = y[i] / Gyz
+        z[i] = z[i] / Gyz
+    return
+
+
+def FGMEXT_to_SCS():
+    global x,y,z
+    zSCS = copy(x)
+    xSCS = copy(-y)
+    ySCS = copy(-z)
+    x = xSCS
+    y = ySCS
+    z = zSCS
+    return
+
+def rotate_SCS():
+    global x,y,z
+    degrees = 146.5
+    theta = 2*pi*degrees/360
+    xx,yy = copy(x),copy(y)
+    x = xx*cos(theta) - yy*sin(theta)
+    y = xx*sin(theta) + yy*cos(theta)
+    return
+
+#%%
+
+
+r = df_complete['resolution']
+x = df_complete['x']
+y = df_complete['y']
+z = df_complete['z']
+
+# change to array
+
+r = array(r)
+x = array(x)
+y = array(y)
+z = array(z)
+# make a default time-axis
+t = range(0,len(x))
+
+t = make_t()
+
+#%%
+
+name = craft + '_' + datadate + code 
+
+quickplot(name +'_raw','sample #','count [#]')
+
+filebase_cal = 'C:/FGM_Extended_Mode/BS_ext_calibrated_files'
+
+filename = filebase_cal + '/' + name + '_raw_timestamped.txt'
+
+quicksave(filename,t,x,y,z,r)
+
+#%%
+
+t,x,y,z,r = quickopen(filename)
+
+
+quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]')
+
+
+#%% nominal scaling
+
+# using +/-64nT with 15 bits in range 2
+
+x = x * (2*64/2**15) * 4**(r-2)
+y = y * (2*64/2**15) * 4**(r-2) * (pi/4)
+z = z * (2*64/2**15) * 4**(r-2) * (pi/4)
+
+quickplot(name +'_scaled','time [UTC]','[nT]')
+    
+
+#%% apply approximate cal using orbit cal see notes 30-Jan-24
+
+# C1 cal file for 2002-02-27 to 28
+calparams = {'x_offsets':   [-2.737,0,0,0,0,0],\
+             'x_gains':     [0.95026,1,1,1,1,1],\
+             'yz_gains':    [(0.95260+0.96908)/2,1,1,1,1,1]}
+
+
+
+
+apply_calparams()
+quickplot(name+'_calibrated','time [UTC]','[nT]')
     
     
+#%%
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+FGMEXT_to_SCS()
+quickplot(name +'_nominal_scs','time [UTC]','[nT]')
+
+#%%
+
+
+rotate_SCS()
+quickplot(name +'_rotated_scs','time [UTC]','[nT]')
+
+#%%
+
+savename = filebase_cal +  '/' + name + '_calibrated.txt'
+
+fgmsave(savename,t,x,y,z)
     
     
     
