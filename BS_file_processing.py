@@ -319,22 +319,24 @@ craft = 'C1'
 
 year = '2001'
 month = '03'
-day = '24'
+day = '31'
 
-dumpdate = '010324' # in format yymmdd
+dumpdate = '010331' # in format yymmdd
 
 code = '_B' # Can also be _K for CD data or _A for 1 day pull data 
 
 # Times at which spacecraft entered and left extended mode
 
 
-ext_entry = datetime.fromisoformat('2001-03-22T14:15:54.000')
-ext_exit = datetime.fromisoformat('2001-03-23T13:16:00.000')
+ext_entry = datetime.fromisoformat('2001-03-29T14:19:29.000')
+ext_exit = datetime.fromisoformat('2001-03-30T13:19:35.000')
 
-datadate = '010322'
+datadate = '010329'
 
 # from SATT
-t_spin = 4.007576457
+# for the datadate, not the dump date
+
+t_spin = 60 / 14.976073
 
 
 # C1 cal file for 2002-02-27 to 28
@@ -587,6 +589,8 @@ quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]')
 
 
 #%% nominal scaling
+
+#nominal change from engineering units to nanotesla
 
 # using +/-64nT with 15 bits in range 2
 
