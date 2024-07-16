@@ -292,6 +292,84 @@ entry_exit_dump_duration_tspin.to_csv(filename)
 
 calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
 
+entry_1 = entry_exit_dump_duration_tspin['Entry Time'][0]
+
+formatted_entry = entry_1.strftime('%Y%m%d')
+print(formatted_entry)
+
+exit_1 = entry_exit_dump_duration_tspin['Exit Time'][0]
+
+formatted_exit = exit_1.strftime('%Y%m%d')
+print(formatted_exit)
+
+#%%
+
+import os, fnmatch
+
+
+def find(pattern_entry, pattern_exit, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        
+        for name in files:
+                
+            if fnmatch.fnmatch(name, pattern_exit):
+                result.append(os.path.join(root, name))
+                
+            elif fnmatch.fnmatch(name, pattern_entry):
+                result.append(os.path.join(root, name))
+                
+            elif fnmatch.fnmatch(name, pattern_exit[-2]):
+                result.append(os.path.join(root, name))
+
+    return result
+
+
+cal_filename = find('*' + str(formatted_entry) + '*', '*' + str(formatted_exit) + '*', calparams_filepath)[-1]
+
+print(cal_filename)
+
+#%%
+
+cal_params = pd.read_csv(cal_filename, skiprows = 58, header = None, sep = ',|:', usecols = range(4), on_bad_lines = 'skip', engine = 'python') 
+
+#%%
+
+x_offsets = cal_params[cal_params[0] == 'Offsets (nT)'][1].values.tolist()
+x_gains = cal_params[cal_params[0] == 'Gains       '][1].values.tolist()
+y_gains = cal_params[cal_params[0] == 'Gains       '][2].values.tolist()
+z_gains = cal_params[cal_params[0] == 'Gains       '][3].values.tolist()
+
+
+#%%
+
+while len(x_offsets) < 6:
+    x_offsets.append(0)
+    
+while len(x_gains) < 6:
+    x_gains.append(1)
+
+while len(y_gains) < 6:
+    y_gains.append(1)
+
+while len(z_gains) < 6:
+    z_gains.append(1)
+
+#%%
+
+yz_gains = []
+
+for i in np.arange(0,6):
+
+    yz_gain = (float(y_gains[i]) + float(z_gains[i])) / 2.0
+    
+    yz_gains.append(yz_gain)
+
+#%%
+
+calparams = {'x_offsets':  x_offsets,\
+             'x_gains':    x_gains,\
+             'yz_gains':   yz_gains}
 
 
 #%%

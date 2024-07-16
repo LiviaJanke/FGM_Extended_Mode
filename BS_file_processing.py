@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 
 import datetime
 
+import os, fnmatch
+
 #%%
 
 # Currently uneeded imports
@@ -310,8 +312,32 @@ def rotate_SCS():
     y = xx*sin(theta) + yy*cos(theta)
     return
 
+def find(pentry, pexit, path):
+
+    pattern_entry = '* __' + pentry + '*'
+    pattern_exit = '*' + pexit + '*'
+    pattern_month = '*' + pexit[:-1] + '*'
+    for root, dirs, files in os.walk(path):
+        
+        for name in files:
+                
+            if fnmatch.fnmatch(name, pattern_entry):
+                return(os.path.join(root, name))
+                      
+            elif fnmatch.fnmatch(name, pattern_exit):
+                return(os.path.join(root, name))
+                
+            elif fnmatch.fnmatch(name, pattern_month):
+                return(os.path.join(root, name))
+
+
+
+
+
     
 #%%
+
+index = 5
 
 # Change here to desired spacecraft and dump date 
 
@@ -319,34 +345,106 @@ craft = 'C1'
 
 # Time of data dump
 
-year = '2001'
-month = '03'
-day = '31'
+#year = '2001'
+#month = '03'
+#day = '31'
 
-dumpdate = '010331' # in format yymmdd
+#dumpdate = '010331' # in format yymmdd
 
 code = '_B' # Can also be _K for CD data or _A for 1 day pull data 
+#code = '_K
+#code = '_A
 
 # Times at which spacecraft entered and left extended mode
 
 
-ext_entry = datetime.fromisoformat('2001-03-29T14:19:29.000')
-ext_exit = datetime.fromisoformat('2001-03-30T13:19:35.000')
 
-datadate = '010329'
+
+
+
+#ext_entry = datetime.fromisoformat('2001-03-29T14:19:29.000')
+#ext_exit = datetime.fromisoformat('2001-03-30T13:19:35.000')
+
+#datadate = '010329'
 
 # from SATT
 # for the datadate, not the dump date
 
-t_spin = 60 / 14.976073
+#t_spin = 60 / 14.976073
+
+#%%
+
+
+Period_identification_filepath = "C:/FGM_Extended_Mode/SCCH_strings/C1_Entry_Exit_Dump_Duration_Tspin.csv"
+
+Entry_Exit_Dump_Duration_Tspin = pd.read_csv(Period_identification_filepath, index_col=0)
+
+#%%
+
+ext_entry = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Entry Time'][index])
+ext_exit = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Exit Time'][index])
+
+ext_dump = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Dump Time'][index])
+t_spin = Entry_Exit_Dump_Duration_Tspin['tspin'][index]
+
+dumpdate = ext_dump.strftime('%Y%m%d')
+
+year = ext_dump.strftime('%Y')
+
+datadate = ext_entry.strftime('%Y%m%d')
+
+
+#%%
+
+calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
+
+formatted_entry = ext_entry.strftime('%Y%m%d')
+
+formatted_exit = ext_exit.strftime('%Y%m%d')
+
+cal_filename = find(formatted_entry, formatted_exit, calparams_filepath)
+
+cal_params = pd.read_csv(cal_filename, skiprows = 58, header = None, sep = ',|:', usecols = range(4), on_bad_lines = 'skip', engine = 'python') 
+
+x_offsets = cal_params[cal_params[0] == 'Offsets (nT)'][1].astype(float).values.tolist()
+x_gains = cal_params[cal_params[0] == 'Gains       '][1].astype(float).values.tolist()
+y_gains = cal_params[cal_params[0] == 'Gains       '][2].astype(float).values.tolist()
+z_gains = cal_params[cal_params[0] == 'Gains       '][3].astype(float).values.tolist()
+
+
+
+while len(x_offsets) < 6:
+    x_offsets.append(0)
+    
+while len(x_gains) < 6:
+    x_gains.append(1)
+
+while len(y_gains) < 6:
+    y_gains.append(1)
+
+while len(z_gains) < 6:
+    z_gains.append(1)
+
+
+yz_gains = []
+
+for i in np.arange(0,6):
+
+    yz_gain = (float(y_gains[i]) + float(z_gains[i])) / 2.0
+    
+    yz_gains.append(yz_gain)
+
+
+calparams = {'x_offsets':  x_offsets,\
+             'x_gains':    x_gains,\
+             'yz_gains':   yz_gains}
+    
 
 
 # C1 cal file for 2002-02-27 to 28
-calparams = {'x_offsets':   [-2.737,0,0,0,0,0],\
-             'x_gains':     [0.95026,1,1,1,1,1],\
-             'yz_gains':    [(0.95260+0.96908)/2,1,1,1,1,1]}
-
-
+#calparams = {'x_offsets':   [-2.737,0,0,0,0,0],\
+#             'x_gains':     [0.95026,1,1,1,1,1],\
+#             'yz_gains':    [(0.95260+0.96908)/2,1,1,1,1,1]}
 
 
 #%%
@@ -355,7 +453,7 @@ folder =  year + '_' + craft + '/'
 
 BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' + folder
 
-BS_filename = craft + '_' + dumpdate + code + '.BS'
+BS_filename = craft + '_' + dumpdate[2:] + code + '.BS'
 
 BS_file_location = BS_filepath + BS_filename
 
