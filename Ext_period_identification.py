@@ -40,7 +40,6 @@ filebase = 'C:/FGM_Extended_Mode/SCCH_strings'
 
 craft = 'C1'
 
-
 filepath = filebase +'/' + craft 
 
 C1_Ext_entries = pd.read_csv(filepath + '_Ext_Entries',usecols = range(8), delimiter = ' ', names = ['Execution_Time', 'Uplink_Time', 'Command_Mnemonic', 'Command_Sequence_Name', 'Cat', 'Src', 'GS', 'Ver'])
@@ -55,102 +54,202 @@ C1_MSA_dumps = pd.read_csv(filepath + '_MSA_Dumps',usecols = range(8), delimiter
 
 C1_MSA_dumps_unique = C1_MSA_dumps.drop_duplicates(subset = 'Execution_Time', keep = 'first').reset_index(drop = True)
 
+
 #%%
 
 
 MSA_dump_times = pd.to_datetime(C1_MSA_dumps_unique['Execution_Time'].str[:-1])
 
+
+#%%
+
+for i in np.arange(0, len(MSA_dump_times)):
+    
+    if i < len(MSA_dump_times) - 1:
+        
+        MSA_dumps_del_t = MSA_dump_times[i+1] - MSA_dump_times[i]
+        
+        if MSA_dumps_del_t < timedelta(seconds = 600):
+            
+            MSA_dump_times.drop(labels = i, inplace = True)
+
+
+#%%
+
+MSA_dump_times.reset_index(drop = True, inplace = True)
+
+
+#%%
+
 Ext_entry_times = pd.to_datetime(C1_Ext_entries_unique['Execution_Time'].str[:-1])
+
+
+#%%
+
+for i in np.arange(0, len(Ext_entry_times)):
+    
+    if i < len(Ext_entry_times) - 1:
+        
+        Ext_entry_times_del_t = Ext_entry_times[i+1] - Ext_entry_times[i]
+        
+        if Ext_entry_times_del_t < timedelta(seconds = 600):
+            
+            Ext_entry_times.drop(labels = i, inplace = True)
+
+#%%
+
+
+Ext_entry_times.reset_index(drop = True, inplace = True)
+
+#%%
 
 Ext_exit_times = pd.to_datetime(C1_Ext_exits_unique['Execution_Time'].str[:-1])
 
+#%%
+
+for i in np.arange(0, len(Ext_exit_times)):
+    
+    if i < len(Ext_exit_times) - 1:
+        
+        Ext_exit_times_del_t = Ext_exit_times[i+1] - Ext_exit_times[i]
+        
+        if Ext_exit_times_del_t < timedelta(seconds = 600):
+            
+            Ext_exit_times.drop(labels = i, inplace = True)
 
 #%%
 
-
-entry_exit_dump_times = pd.DataFrame({'Entry Time':Ext_entry_times, 'Exit Time': Ext_exit_times, 'Dump Time' :MSA_dump_times })
-
-#%%
-
-
-
-
+Ext_exit_times.reset_index(drop = True, inplace = True)
 
 #%%
 
-# Want to pair up entry, exit and MSA dump times
-
-# this requires manual alteration of np.arange end value
-
-entries = []
-
-exits = []
-
-dumps = []
 
 unmatched_entries = []
 
 unmatched_exits = []
 
+ext_entered = []
+
+ext_left = []
+
+ext_durations = []
+
 unmatched_exit_counter = 0
 
-unmatched_entry_counter = 0
+unmatched_entry_counter = 0 
 
-# subtraction value needs to be one more than unmatched entry counter
-
-for i in np.arange(0, len(Ext_entry_times) - 124):
+for i in np.arange(0, len(Ext_entry_times) - 55):
     
-    entry = Ext_entry_times[i + unmatched_entry_counter]
-    
-#    print(entry)
-    
-    next_entry = Ext_entry_times[i + 1 + unmatched_entry_counter]
     print(i)
-    print(i + 1 + unmatched_entry_counter)
+    print(unmatched_entry_counter)
+    print(unmatched_exit_counter)
     
-#    print(next_entry)
+    time_diff_exit_to_next_entry = Ext_entry_times[i + 1 + unmatched_entry_counter] - Ext_exit_times[i + unmatched_exit_counter]
     
-    exit_time =  Ext_exit_times[i + unmatched_exit_counter]
-    
-#    print(exit_time)
-    
-    next_exit_time = Ext_exit_times[i + 1 + unmatched_exit_counter]
-    
-#    print(next_exit_time)
+    if time_diff_exit_to_next_entry > timedelta(seconds = 0):
         
-    if exit_time > next_entry:
+        exit_addon = 0
         
-        unmatched_entry_counter +=1    
+        if Ext_exit_times[i + unmatched_exit_counter] - Ext_entry_times[i + unmatched_entry_counter] > timedelta(seconds = 0) and Ext_exit_times[i + unmatched_exit_counter] - Ext_entry_times[i + unmatched_entry_counter] < timedelta(hours = 28):
         
-#        print(unmatched_entry_counter)
-        
-    elif next_exit_time < next_entry:
-        
-        unmatched_exit_counter +=1    
-        
-#        print(unmatched_exit_counter)    
+            ext_duration = Ext_exit_times[i + unmatched_exit_counter] - Ext_entry_times[i + unmatched_entry_counter]
             
-    elif entry < exit_time < next_entry:
+            ext_durations.append(ext_duration)
         
-        entries.append(entry)
+            ext_entered.append(Ext_entry_times[i + unmatched_entry_counter])
         
-        exits.append(exit_time)
+            ext_left.append(Ext_exit_times[i + unmatched_exit_counter])
+            
+        elif Ext_exit_times[i + unmatched_exit_counter + 1] - Ext_entry_times[i + unmatched_entry_counter] > timedelta(seconds = 0) and Ext_exit_times[i + unmatched_exit_counter + 1] - Ext_entry_times[i + unmatched_entry_counter] < timedelta(hours = 28):
+            
+            ext_duration = Ext_exit_times[i + unmatched_exit_counter + 1] - Ext_entry_times[i + unmatched_entry_counter]
+            
+            ext_durations.append(ext_duration)
         
+            ext_entered.append(Ext_entry_times[i + unmatched_entry_counter])
         
+            ext_left.append(Ext_exit_times[i + unmatched_exit_counter + 1])
+            
+            unmatched_exit_counter += 2
+            
+        else:
+            
+            print((Ext_entry_times[i + unmatched_entry_counter]))
+            
+            print(Ext_exit_times[i + unmatched_exit_counter])
+            
+            print(ext_duration)
+            
+            unmatched_exit_counter += 1
+                
+            unmatched_exits.append(i)
+            
     else:
         
-        print('yikes')
+        unmatched_entry_counter += 1
+            
+        unmatched_entries.append(i)
+                
         
+        
+#%%
+
+
+dates = MSA_dump_times.values
+df=pd.DataFrame(dates)
+df=df.set_index(dates) 
+df=df.sort_index(ascending=False)
+
+
+#%%
+
+dump_times = []
+
+for i in np.arange(0, len(ext_left)):
     
+    print(ext_left[i])
+
+    result = df.truncate(before=ext_left[i])
+    
+#    print(result)
+    
+    val = result.iloc[-1]  #take the bottom value, or the 1st after the base date
+   
+    print(val[0])
+        
+    dump_times.append(val[0])
+
+
+#%%
+
+entry_exit_dump_times = pd.DataFrame({'Entry Time':ext_entered, 'Exit Time': ext_left, 'Dump Time': dump_times})
 
 #%%
 
 
-    
+ext = '.csv'
+
+filename = filepath + '_Entry_Exit_Dump' + ext
+
+entry_exit_dump_times.to_csv(filename)
+
+
+#%%
+
+
+SATT_strings = pd.read_csv('C:/FGM_Extended_Mode/SATT_Strings/C1_SATT_Strings')
+
+
+#%%
 
 
 
 
+#%%
+
+calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
+
+#%%
 
 
 
