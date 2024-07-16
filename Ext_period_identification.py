@@ -222,10 +222,7 @@ for i in np.arange(0, len(ext_left)):
 
 #%%
 
-entry_exit_dump_times = pd.DataFrame({'Entry Time':ext_entered, 'Exit Time': ext_left, 'Dump Time': dump_times})
-
-#%%
-
+entry_exit_dump_times = pd.DataFrame({'Entry Time':ext_entered, 'Exit Time': ext_left, 'Dump Time': dump_times, 'Duration': ext_durations})
 
 ext = '.csv'
 
@@ -237,17 +234,65 @@ entry_exit_dump_times.to_csv(filename)
 #%%
 
 
-SATT_strings = pd.read_csv('C:/FGM_Extended_Mode/SATT_Strings/C1_SATT_Strings')
+SATT_strings = pd.read_csv('C:/FGM_Extended_Mode/SATT_Strings/C1_SATT_Strings', usecols = range(7), sep = '\s+', names = ['num','letter', 'start', 'stop', 'eh', 'huh', 'spins_per_min'])
+
+SATT_starts = pd.to_datetime(SATT_strings['start'].str[:-1])
+
+SATT_stops = pd.to_datetime(SATT_strings['stop'].str[:-1])
+
+SATT_spins_per_min = SATT_strings['spins_per_min']
+
+starts_stops_spins_df = pd.DataFrame({'Starts':SATT_starts, 'Stops': SATT_stops, 'Spins': SATT_spins_per_min})
 
 
 #%%
 
+tspins = []
 
+for i in np.arange(0, len(entry_exit_dump_times['Entry Time'])):
+    
+    ext_entry = entry_exit_dump_times['Entry Time'][i]
+    
+    #print(ext_entry)
+    
+    ext_exit = entry_exit_dump_times['Exit Time'][i]
+    
+    closest_start = np.min(abs(starts_stops_spins_df['Starts'] - ext_entry))
+    
+    diffs_to_start = abs(starts_stops_spins_df['Starts'] - ext_entry)
+    
+    closest_stop = np.min(abs(starts_stops_spins_df['Stops'] - ext_exit))
+    
+    diffs_to_stop = abs(starts_stops_spins_df['Stops'] - ext_exit)
+    
+    if closest_start < closest_stop:
+        
+        SATT_index = list(diffs_to_start).index(closest_start)
+        
+    else:
+        
+        SATT_index = list(diffs_to_stop).index(closest_stop)
+
+    tspin = 60 / starts_stops_spins_df['Spins'].iloc[SATT_index]
+    
+    tspins.append(tspin)
+        
+#%%
+
+entry_exit_dump_duration_tspin = pd.DataFrame({'Entry Time':ext_entered, 'Exit Time': ext_left, 'Dump Time': dump_times,  'Duration': ext_durations, 'tspin': tspins})
+
+ext = '.csv'
+
+filename = filepath + '_Entry_Exit_Dump_Duration_Tspin' + ext
+
+entry_exit_dump_duration_tspin.to_csv(filename)
 
 
 #%%
 
 calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
+
+
 
 #%%
 
