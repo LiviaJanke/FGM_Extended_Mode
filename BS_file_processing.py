@@ -22,6 +22,10 @@ import datetime
 
 from datetime import date
 
+import sys 
+
+sys.path.append('C:/FGM_Extended_Mode/Lib') 
+
 from fgmfiletools import fgmsave, fgmopen_cef, fgmopen_dp, fgmopen
 
 from pandas import read_csv
@@ -91,6 +95,8 @@ def s16(val):
     
     return -(value & 0x8000) | (value & 0x7fff)
 
+
+
 def packet_decoding_even(number):
     
     packig = ext_bytes[number][68:7180]
@@ -104,6 +110,8 @@ def packet_decoding_even(number):
     range_vals = []
     
     reset_vals = []
+    
+    reset_vals_hex = []
     
     
     for i in np.arange(0,len(packig), 16):
@@ -122,6 +130,8 @@ def packet_decoding_even(number):
             
             reset_val = s16(int(packig[i+13:i+16],16))
             
+            reset_val_hex = packig[i+13:i+16]
+            
         else:
 
             x= s16(int(packig[i:i+4],16))
@@ -134,6 +144,8 @@ def packet_decoding_even(number):
             
             reset_val = 'af'
             
+            reset_val_hex = 'af'
+            
         
         x_vals.append(x)
         
@@ -145,59 +157,48 @@ def packet_decoding_even(number):
         
         reset_vals.append(reset_val)
         
+        reset_vals_hex.append(reset_val_hex)
+        
     
-    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
+    df_p = pd.DataFrame(zip(reset_vals_hex, reset_vals, range_vals, x_vals, y_vals, z_vals))
     
-    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+    df_p.columns = ['reset_hex', 'reset', 'resolution', 'x', 'y', 'z']    
          
     return df_p
 
 
 def packet_decoding_odd(number):
     
-    packig = ext_bytes[number][68:7180]
+    packig = ext_bytes[number][76:7180]
     
-    x_vals = []
+    partial_vec_end = ext_bytes[number][68:76]
     
-    y_vals = []
+    x_vals = ['bef']
     
-    z_vals = []
+    y_vals = ['bef']
     
-    range_vals = []
+    z_vals = [s16(int(partial_vec_end[0:4],16))]
     
-    reset_vals = []
+    range_vals = [s16(int(partial_vec_end[4],16))]
     
+    reset_vals = [s16(int(partial_vec_end[5:8],16))]
     
-    for i in np.arange(0, len(packig) - 16, 16):
-        
-        byte_num = i/2
-        
-        if byte_num > 4:
-        
-            x = s16(int(packig[i:i+4],16))
+    reset_vals_hex = [partial_vec_end[5:8]]
+    
+    for i in np.arange(0, len(packig), 16):
+                
+        x = s16(int(packig[i:i+4],16))
             
-            y = s16(int(packig[i+4:i+8],16))
+        y = s16(int(packig[i+4:i+8],16))
             
-            z = s16(int(packig[i+8:i+12],16))
+        z = s16(int(packig[i+8:i+12],16))
             
-            range_val = s16(int(packig[i+12],16))
+        range_val = s16(int(packig[i+12],16))
             
-            reset_val = s16(int(packig[i+13:i+16],16))
+        reset_val = s16(int(packig[i+13:i+16],16))
             
-        else:
-            
-            x = 'bef'
-            
-            y = 'bef'
-            
-            z = s16(int(packig[i:i+4],16))
-            
-            range_val = s16(int(packig[i+5],16))
-            
-            reset_val = s16(int(packig[i+6:i+8],16))
-            
+        reset_val_hex = packig[i+13:i+16]
 
-    
         x_vals.append(x)
         
         y_vals.append(y)
@@ -208,10 +209,11 @@ def packet_decoding_odd(number):
         
         reset_vals.append(reset_val)
         
+        reset_vals_hex.append(reset_val_hex)
     
-    df_p = pd.DataFrame(zip(reset_vals, range_vals, x_vals, y_vals, z_vals))
+    df_p = pd.DataFrame(zip(reset_vals_hex, reset_vals, range_vals, x_vals, y_vals, z_vals))
     
-    df_p.columns = ['reset', 'resolution', 'x', 'y', 'z']    
+    df_p.columns = ['reset_hex', 'reset', 'resolution', 'x', 'y', 'z']    
          
     return df_p
 
@@ -383,7 +385,7 @@ while True:
         break
     
 
-del data
+#del data
 
 #%%
 
@@ -439,17 +441,24 @@ all_valid_dfs = []
 
 for i in packet_range:
     
+ #   print(i)
+    
     even_df_i = packet_decoding_even(i)
-    
-    even_df_i['reset'] = even_df_i['reset'].astype(str)
-    
-    ecount, eunique, etop, efreq = even_df_i['reset'].describe()
     
     odd_df_i = packet_decoding_odd(i)
     
-    odd_df_i['reset'] = odd_df_i['reset'].astype(str)
+#    even_df_i['reset'] = even_df_i['reset'].astype(str)
     
-    ocount, ounique, otop, ofreq = odd_df_i['reset'].describe()
+    ecount, eunique, etop, efreq = even_df_i['reset_hex'].describe()
+    
+ #   print(eunique)
+    
+
+    #odd_df_i['reset'] = odd_df_i['reset'].astype(str)
+    
+    ocount, ounique, otop, ofreq = odd_df_i['reset_hex'].describe()
+    
+  #  print(ounique)
     
     if eunique < 60:
         
@@ -457,11 +466,15 @@ for i in packet_range:
         
         valid_nums_even_decoded.append(i)
         
-    elif ounique <60:
+      #  print(i)
+        
+    elif ounique < 60:
         
         all_valid_dfs.append(odd_df_i)
         
         valid_nums_odd_decoded.append(i)
+        
+      #  print(i)
         
     else:
         
@@ -496,6 +509,8 @@ for i in af_indices:
     if i <  len(sequential_data['reset']) - 1:
     
         sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
+        
+        sequential_data.loc[i,'reset_hex'] = sequential_data.loc[i+1, 'reset_hex']
     
         sequential_data.loc[i,'resolution'] = sequential_data.loc[i+1, 'resolution']
     
@@ -509,8 +524,11 @@ for i in af_indices:
 
 #%%
 
-
 df_complete_indexed = sequential_data.drop(labels = bef_indices, axis = 0)
+
+
+df_complete_indexed.drop_duplicates(keep = 'first', inplace = True)
+
 
 del sequential_data
 

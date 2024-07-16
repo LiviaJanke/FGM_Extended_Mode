@@ -18,6 +18,10 @@ import datetime
 
 from datetime import date
 
+import sys 
+
+sys.path.append('C:/FGM_Extended_Mode/Lib') 
+
 from fgmfiletools import fgmsave, fgmopen_cef, fgmopen_dp, fgmopen
 
 from pandas import read_csv
@@ -63,7 +67,20 @@ Ext_exit_times = pd.to_datetime(C1_Ext_exits_unique['Execution_Time'].str[:-1])
 
 #%%
 
+
+entry_exit_dump_times = pd.DataFrame({'Entry Time':Ext_entry_times, 'Exit Time': Ext_exit_times, 'Dump Time' :MSA_dump_times })
+
+#%%
+
+
+
+
+
+#%%
+
 # Want to pair up entry, exit and MSA dump times
+
+# this requires manual alteration of np.arange end value
 
 entries = []
 
@@ -77,37 +94,56 @@ unmatched_exits = []
 
 unmatched_exit_counter = 0
 
-for i in np.arange(0, 10):#len(Ext_entry_times) - 1):
+unmatched_entry_counter = 0
+
+# subtraction value needs to be one more than unmatched entry counter
+
+for i in np.arange(0, len(Ext_entry_times) - 124):
     
-    entry = Ext_entry_times[i]
+    entry = Ext_entry_times[i + unmatched_entry_counter]
     
-    print(entry)
+#    print(entry)
     
-    next_entry = Ext_entry_times[i + 1]
+    next_entry = Ext_entry_times[i + 1 + unmatched_entry_counter]
+    print(i)
+    print(i + 1 + unmatched_entry_counter)
     
-    print(next_entry)
+#    print(next_entry)
     
     exit_time =  Ext_exit_times[i + unmatched_exit_counter]
     
-    print(exit_time)
+#    print(exit_time)
+    
+    next_exit_time = Ext_exit_times[i + 1 + unmatched_exit_counter]
+    
+#    print(next_exit_time)
         
-    if exit_time < next_entry:
+    if exit_time > next_entry:
         
-        if exit_time > entry and exit_time < next_entry :
+        unmatched_entry_counter +=1    
         
-            entries.append(entry)
-            exits.append(exit_time)
+#        print(unmatched_entry_counter)
+        
+    elif next_exit_time < next_entry:
+        
+        unmatched_exit_counter +=1    
+        
+#        print(unmatched_exit_counter)    
             
-        else:
-            
-            
+    elif entry < exit_time < next_entry:
+        
+        entries.append(entry)
+        
+        exits.append(exit_time)
+        
         
     else:
         
-        unmatched_exit_counter +=1
-        
+        print('yikes')
         
     
+
+#%%
 
 
     
