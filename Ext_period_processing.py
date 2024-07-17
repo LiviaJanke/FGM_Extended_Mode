@@ -6,7 +6,7 @@ Created on Mon Jul  8 09:32:16 2024
 """
 
 
-index = 9
+index = 21
 
 craft = 'C1'
 
@@ -30,7 +30,6 @@ from fgmfiletools import fgmsave
 from datetime import datetime
 
 from ext_functions import packet_decoding_even, packet_decoding_odd, quickplot, quicksave, make_t, quickopen, apply_calparams, FGMEXT_to_SCS, rotate_SCS, find_cal_file, find_BS_file, packet
-
 
 Period_identification_filepath = 'C:/FGM_Extended_Mode/SCCH_strings/' + craft + '_Entry_Exit_Dump_Duration_Tspin.csv'
 
@@ -181,13 +180,13 @@ for i in packet_range:
  
     ocount, ounique, otop, ofreq = odd_df_i['reset_hex'].describe()
     
-    if eunique < 60:
+    if eunique < 25:
         
         all_valid_dfs.append(even_df_i)
         
         valid_nums_even_decoded.append(i)
         
-    elif ounique < 60:
+    elif ounique < 25:
         
         all_valid_dfs.append(odd_df_i)
         
@@ -201,6 +200,10 @@ for i in packet_range:
     
 sequential_data = pd.concat(all_valid_dfs)
 
+#sequential_data = complete_df[~(complete_df.index.duplicated() & complete_df.duplicated)]
+
+sequential_data.drop_duplicates(keep = 'first', inplace = True)
+
 
 sequential_data.reset_index(drop = True, inplace = True)
 
@@ -212,17 +215,15 @@ af_indices = sequential_data.loc[sequential_data['z'] == 'af'].index.tolist()
 
 for i in af_indices:
     
-    if i <  len(sequential_data['reset']) - 1:
+    if i <  len(sequential_data['reset']) - 1 and sequential_data.loc[i+1, 'x'] == 'bef':
     
-        if sequential_data.loc[i+1, 'x'] == 'bef':
-    
-            sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
+        sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
         
-            sequential_data.loc[i,'reset_hex'] = sequential_data.loc[i+1, 'reset_hex']
+        sequential_data.loc[i,'reset_hex'] = sequential_data.loc[i+1, 'reset_hex']
     
-            sequential_data.loc[i,'resolution'] = sequential_data.loc[i+1, 'resolution']
+        sequential_data.loc[i,'resolution'] = sequential_data.loc[i+1, 'resolution']
     
-            sequential_data.loc[i,'z'] = sequential_data.loc[i+1,'z']
+        sequential_data.loc[i,'z'] = sequential_data.loc[i+1,'z']
     
     else:
         
@@ -230,11 +231,8 @@ for i in af_indices:
         
 
 
-
-
 sequential_data.drop(labels = bef_indices, axis = 0, inplace = True)
 
-sequential_data.drop_duplicates(keep = 'first', inplace = True)
 
 
 sequential_data['reset'] = sequential_data['reset'].astype(float)
@@ -246,6 +244,14 @@ sequential_data['x'] = sequential_data['x'].astype(float)
 sequential_data['y'] = sequential_data['y'].astype(float)
 
 sequential_data['z'] = sequential_data['z'].astype(float)
+
+
+reset_vecs = sequential_data['reset']
+
+plt.plot(reset_vecs, linewidth = 0, marker = '.')
+
+
+sequential_data.reset_index(drop = True, inplace = True)
 
 max_good_res = int(np.mean(sequential_data['resolution'].values) + np.std(sequential_data['resolution'].values))
 
@@ -260,15 +266,7 @@ for i in badrange_indices:
     else:
         
         sequential_data.loc[i,'resolution'] = np.median(sequential_data['resolution']) 
-
-
-reset_vecs = sequential_data['reset']
-
-plt.plot(reset_vecs, linewidth = 0, marker = '.')
-
-
-
-sequential_data.reset_index(drop = True, inplace = True)
+        
 
 
 
