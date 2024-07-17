@@ -6,7 +6,7 @@ Created on Mon Jul  8 09:32:16 2024
 """
 
 
-index = 5
+index = 9
 
 craft = 'C1'
 
@@ -87,9 +87,7 @@ for i in np.arange(0,6):
     
     yz_gains.append(yz_gain)
     
-x_offsets = [int(i) for i in x_offsets]
-x_gains = [int(i) for i in x_gains]
-yz_gains = [int(i) for i in yz_gains]
+
 
 calparams = {'x_offsets':  x_offsets,\
              'x_gains':    x_gains,\
@@ -229,8 +227,10 @@ for i in af_indices:
     else:
         
         bef_indices.append(i)
+        
 
-    
+
+
 
 sequential_data.drop(labels = bef_indices, axis = 0, inplace = True)
 
@@ -239,7 +239,7 @@ sequential_data.drop_duplicates(keep = 'first', inplace = True)
 
 sequential_data['reset'] = sequential_data['reset'].astype(float)
 
-sequential_data['resolution'] = sequential_data['resolution'].astype(float)
+sequential_data['resolution'] = sequential_data['resolution'].astype(int)
 
 sequential_data['x'] = sequential_data['x'].astype(float)
 
@@ -247,6 +247,19 @@ sequential_data['y'] = sequential_data['y'].astype(float)
 
 sequential_data['z'] = sequential_data['z'].astype(float)
 
+max_good_res = int(np.mean(sequential_data['resolution'].values) + np.std(sequential_data['resolution'].values))
+
+badrange_indices = sequential_data.loc[sequential_data['resolution'] > max_good_res].index.tolist()
+        
+for i in badrange_indices:
+    
+    if i > 5:
+    
+        sequential_data.loc[i,'resolution'] = sequential_data.loc[i - 5,'resolution'] 
+    
+    else:
+        
+        sequential_data.loc[i,'resolution'] = np.median(sequential_data['resolution']) 
 
 
 reset_vecs = sequential_data['reset']
@@ -321,15 +334,15 @@ quickplot(name +'_scaled','time [UTC]','[nT]', t, r, x, y, z)
 
 # apply approximate cal using orbit cal see notes 30-Jan-24
 
-apply_calparams(t, calparams, r)
+x, y, z = apply_calparams(t, calparams, r, x, y, z)
 quickplot(name+'_calibrated','time [UTC]','[nT]', t,r, x, y, z)
 
 
-FGMEXT_to_SCS()
+x, y, z = FGMEXT_to_SCS(x,y,z)
 quickplot(name +'_nominal_scs','time [UTC]','[nT]', t, r, x, y, z)
 
 
-rotate_SCS()
+x,y,z = rotate_SCS(x,y,z)
 quickplot(name +'_rotated_scs','time [UTC]','[nT]', t, r, x, y, z)
 
 # Does theta change for rotate_SCS?

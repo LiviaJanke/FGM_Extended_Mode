@@ -208,8 +208,8 @@ def quickopen(filename):
     return t,x,y,z,r
 
 
-def apply_calparams(t, calparams, r):
-    global x,y,z
+def apply_calparams(t, calparams, r,x,y,z):
+    #global x,y,z
     for i in range(0,len(t)):
         Ox = calparams['x_offsets'][r[i]-2]
         Gx = calparams['x_gains'][r[i]-2]
@@ -217,27 +217,27 @@ def apply_calparams(t, calparams, r):
         x[i] = (x[i] - Ox) / Gx
         y[i] = y[i] / Gyz
         z[i] = z[i] / Gyz
-    return
+    return x, y, z
 
 
-def FGMEXT_to_SCS():
-    global x,y,z
+def FGMEXT_to_SCS(x, y, z):
+    #global x,y,z
     zSCS = np.copy(x)
     xSCS = np.copy(-y)
     ySCS = np.copy(-z)
     x = xSCS
     y = ySCS
     z = zSCS
-    return
+    return x, y, z
 
-def rotate_SCS():
-    global x,y,z
+def rotate_SCS(x,y,z):
+    #global x,y,z
     degrees = 146.5
     theta = 2*np.pi*degrees/360
     xx,yy = np.copy(x),np.copy(y)
     x = xx*np.cos(theta) - yy*np.sin(theta)
     y = xx*np.sin(theta) + yy*np.cos(theta)
-    return
+    return x,y,z
 
 def find_cal_file(pentry, pexit, path):
 
@@ -265,9 +265,7 @@ def find_cal_file(pentry, pexit, path):
             elif fnmatch.fnmatch(name, pattern_month_whole):
                 return(os.path.join(root, name))  
             
-            else:
-                
-                print('no cal file found')
+
             
 
 def find_BS_file(date, craft, path):
@@ -291,9 +289,7 @@ def find_BS_file(date, craft, path):
             elif fnmatch.fnmatch(name, pattern_A):
                 return(os.path.join(root, name))
             
-            else:
-                
-                print('no BS file found')
+
 
     
 
