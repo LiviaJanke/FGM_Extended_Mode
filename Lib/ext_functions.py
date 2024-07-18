@@ -6,6 +6,10 @@ Created on Wed Jul 17 11:04:31 2024
 """
 import numpy as np
 
+from fgmfiletools import fgmsave
+
+import matplotlib.pyplot as plt
+
 import pandas as pd
 
 import os, fnmatch
@@ -336,5 +340,467 @@ class packet():
     
     def __str__(self):
         return("{:7s}".format("#"+str(self.pktcnt))+" | "+" ".join('{:02X}'.format(n) for n in self.cdds)+" | "+" ".join('{:02X}'.format(n) for n in self.payload[0:30]))
+
+
+def closest_higher_date(date_list, test_date):
+    sorted_list = sorted(date_list)
+    for date in sorted_list:
+        if date >= test_date:
+            return date
+
+    return sorted_list[-1]
+
+
+
+def get_calibrated_ext_data(index, craft):
+    
+    Ext_entries_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Entries'
+
+    Ext_exits_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Exits'
+
+    MSA_dumps_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_MSA_Dump_times'
+
+    starts_stops_spins_df = pd.read_csv('C:/FGM_Extended_Mode/Lib/' + craft + '_SATT_start_stop_spins',names = ['Starts', 'Stops', 'Spins'])
+
+    ext_entries_df = pd.read_csv(Ext_entries_filepath, header = None)
+
+    ext_entries = pd.to_datetime(ext_entries_df[0])
+
+    ext_exits_df = pd.read_csv(Ext_exits_filepath, header = None)
+
+    ext_exits = pd.to_datetime(ext_exits_df[0])
+
+    MSA_dumps_df = pd.read_csv(MSA_dumps_filepath, header = None)
+
+    MSA_dumps = pd.to_datetime(MSA_dumps_df[0])
+        
+
+    ext_entry = ext_entries[index]
+
+    next_ext_entry = ext_entries[index + 1]
+
+
+    if index > 1:
+        prev_ext_entry = ext_entries[index - 1]
+        
+        prev_ext_exit = closest_higher_date(ext_exits, prev_ext_entry)
+        
+        prev_MSA_dump =  closest_higher_date(MSA_dumps, prev_ext_exit)
+
+    ext_exit = closest_higher_date(ext_exits, ext_entry)
+
+    next_ext_exit = closest_higher_date(ext_exits, next_ext_entry)
+
+
+    MSA_dump = closest_higher_date(MSA_dumps, ext_exit)
+
+    next_MSA_dump =  closest_higher_date(MSA_dumps, next_ext_exit)
+
+    duration = ext_exit - ext_entry
+
+    if ext_exit > next_ext_entry:
+        
+        raise Exception("Unmatched Entry")
+
+    if MSA_dump > next_ext_exit:
+        
+        raise Exception("No Dump")
+        
+    if duration <= timedelta(seconds = 0):
+        
+        raise Exception("Negatve/Zero Duration")
+        
+    early_half = False
+
+    late_half = False
+
+    if MSA_dump.strftime('%Y%m%d') == next_MSA_dump.strftime('%Y%m%d'):
+        
+        early_half = True
+        
+    if index > 1:
+        
+        if MSA_dump.strftime('%Y%m%d') == prev_MSA_dump.strftime('%Y%m%d'):
+            
+            late_half = True
+
+
+
+    closest_start = np.min(abs(pd.to_datetime(starts_stops_spins_df['Starts']) - ext_entry))
+
+    diffs_to_start = abs(pd.to_datetime(starts_stops_spins_df['Starts']) - ext_entry)
+
+    closest_stop = np.min(abs(pd.to_datetime(starts_stops_spins_df['Stops']) - ext_exit))
+
+    diffs_to_stop = abs(pd.to_datetime(starts_stops_spins_df['Stops']) - ext_exit)
+
+    if closest_start < closest_stop:
+        
+        SATT_index = list(diffs_to_start).index(closest_start)
+        
+    else:
+        
+        SATT_index = list(diffs_to_stop).index(closest_stop)
+
+    t_spin = 60 / starts_stops_spins_df['Spins'].iloc[SATT_index]
+
+
+
+    dumpdate = MSA_dump.strftime('%Y%m%d')
+
+    year = MSA_dump.strftime('%Y')
+
+    datadate = ext_entry.strftime('%Y%m%d')
+
+
+    calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
+
+    formatted_entry = ext_entry.strftime('%Y%m%d')
+
+    formatted_exit = ext_exit.strftime('%Y%m%d')
+
+    cal_filename = find_cal_file(formatted_entry, formatted_exit, calparams_filepath)
+
+    cal_params = pd.read_csv(cal_filename, skiprows = 58, header = None, sep = ',|:', usecols = range(4), on_bad_lines = 'skip', engine = 'python') 
+
+    x_offsets = cal_params[cal_params[0] == 'Offsets (nT)'][1].astype(float).values.tolist()
+    x_gains = cal_params[cal_params[0] == 'Gains       '][1].astype(float).values.tolist()
+    y_gains = cal_params[cal_params[0] == 'Gains       '][2].astype(float).values.tolist()
+    z_gains = cal_params[cal_params[0] == 'Gains       '][3].astype(float).values.tolist()
+
+
+
+    while len(x_offsets) < 6:
+        x_offsets.append(0.0)
+        
+    while len(x_gains) < 6:
+        x_gains.append(1.0)
+
+    while len(y_gains) < 6:
+        y_gains.append(1.0)
+
+    while len(z_gains) < 6:
+        z_gains.append(1.0)
+
+
+    yz_gains = []
+
+    for i in np.arange(0,6):
+
+        yz_gain = (float(y_gains[i]) + float(z_gains[i])) / 2.0
+        
+        yz_gains.append(yz_gain)
+        
+
+
+    calparams = {'x_offsets':  x_offsets,\
+                 'x_gains':    x_gains,\
+                 'yz_gains':   yz_gains}
+
+
+    folder =  year + '_' + craft + '/'
+
+    BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' + folder
+
+    BS_filename = find_BS_file(dumpdate[2:], craft, BS_filepath)
+
+    BS_file_location = BS_filename
+
+    file = open(BS_file_location,"rb")
+
+    # this is the entire BS file retrieved on the dump date, including Burst Science data 
+    # D Burst Science packets have size 2232
+    # Normal Science and Data Dump (aka Extended Mode ?) both have size 3596
+
+
+    data=bytearray(file.read())
+    file.close()
+    datalen=len(data)    
+        
+
+    packets=[]
+    offset=0
+
+    while True:
+        packets.append(packet(data[offset:]))
+        offset+=15+len(packets[-1].payload)
+        if packets[-1].payload[0]==0 and packets[-1].payload[1]==0x0E:
+            packets=packets[:-1]
+        if offset>=datalen:
+            break
+        
+
+    del data
+
+
+    ext_packets = []
+
+    packet_resets = []
+
+    if early_half == True:
+        
+        for i in packets:
+            
+            if i.status == 15:
+                
+                packet_resets.append(i.reset)
+                
+                if len(packet_resets) < 2:
+            
+                    ext_packets.append(i)
+                    
+                elif np.abs(packet_resets[-1] - packet_resets[-2]) < 10:
+                    
+                    ext_packets.append(i)
+                    
+    if late_half == True:
+        
+        for i in packets:
+            
+            if i.status == 15:
+                
+                packet_resets.append(i.reset)
+                
+                if len(packet_resets) > 1:
+            
+                    if np.abs(i.reset - packet_resets[0]) > 200:
+                    
+                        ext_packets.append(i)
+
+    if early_half == False and late_half == False:
+
+        for i in packets:
+        
+            packet_resets.append(i.reset)
+        
+            if i.status == 15:
+            
+                ext_packets.append(i)
+            
+
+    del packets 
+
+
+    ext_bytes = []
+
+    for i in ext_packets:
+        
+        hex_vals = i.payload.hex()
+        
+        ext_bytes.append(hex_vals)
+
+
+    packet_range = np.arange(0, len(ext_bytes))
+
+
+    # filtering for quality and only getting sequential even/odd
+
+    valid_nums_even_decoded = []
+
+    valid_nums_odd_decoded = []
+
+    no_valid_decode = []
+
+    all_valid_dfs = []
+
+    for i in packet_range:
+
+        even_df_i = packet_decoding_even(ext_bytes, i)
+        
+        odd_df_i = packet_decoding_odd(ext_bytes, i)
+        
+        ecount, eunique, etop, efreq = even_df_i['reset_hex'].describe()
+     
+        ocount, ounique, otop, ofreq = odd_df_i['reset_hex'].describe()
+        
+        if eunique < 25:
+            
+            all_valid_dfs.append(even_df_i)
+            
+            valid_nums_even_decoded.append(i)
+            
+        elif ounique < 25:
+            
+            all_valid_dfs.append(odd_df_i)
+            
+            valid_nums_odd_decoded.append(i)
+            
+        else:
+            
+            no_valid_decode.append(i)
+            
+
+        
+    sequential_data = pd.concat(all_valid_dfs)
+
+    sequential_data.drop_duplicates(keep = 'first', inplace = True)
+
+    sequential_data.reset_index(drop = True, inplace = True)
+
+
+    bef_indices = sequential_data.loc[sequential_data['x'] == 'bef'].index.tolist()
+
+    af_indices = sequential_data.loc[sequential_data['z'] == 'af'].index.tolist()
+
+
+    for i in af_indices:
+        
+        if i <  len(sequential_data['reset']) - 1 and sequential_data.loc[i+1, 'x'] == 'bef':
+        
+            sequential_data.loc[i,'reset'] = sequential_data.loc[i+1, 'reset']
+            
+            sequential_data.loc[i,'reset_hex'] = sequential_data.loc[i+1, 'reset_hex']
+        
+            sequential_data.loc[i,'resolution'] = sequential_data.loc[i+1, 'resolution']
+        
+            sequential_data.loc[i,'z'] = sequential_data.loc[i+1,'z']
+        
+        else:
+            
+            bef_indices.append(i)
+            
+
+
+    sequential_data.drop(labels = bef_indices, axis = 0, inplace = True)
+
+
+
+    sequential_data['reset'] = sequential_data['reset'].astype(float)
+
+    sequential_data['resolution'] = sequential_data['resolution'].astype(int)
+
+    sequential_data['x'] = sequential_data['x'].astype(float)
+
+    sequential_data['y'] = sequential_data['y'].astype(float)
+
+    sequential_data['z'] = sequential_data['z'].astype(float)
+
+
+    reset_vecs = sequential_data['reset']
+
+    plt.plot(reset_vecs, linewidth = 0, marker = '.')
+
+
+    sequential_data.reset_index(drop = True, inplace = True)
+
+    max_good_res = int(np.mean(sequential_data['resolution'].values) + np.std(sequential_data['resolution'].values))
+
+    badrange_indices = sequential_data.loc[sequential_data['resolution'] > max_good_res].index.tolist()
+            
+    for i in badrange_indices:
+        
+        if i > 5:
+        
+            sequential_data.loc[i,'resolution'] = sequential_data.loc[i - 5,'resolution'] 
+        
+        else:
+            
+            sequential_data.loc[i,'resolution'] = np.median(sequential_data['resolution']) 
+            
+
+
+
+    filebase_decoded = 'C:/FGM_Extended_Mode/BS_ext_decoded_files'
+
+
+
+    filepath = filebase_decoded +'/' + craft + '_' + dumpdate + '_clean_decode' + '.csv'
+
+    sequential_data.to_csv(filepath)
+
+    del filepath
+
+
+    # timestamping and scaling decoded file
+
+    r = sequential_data['resolution']
+    x = sequential_data['x']
+    y = sequential_data['y']
+    z = sequential_data['z']
+
+    # change to array
+
+    r = np.array(r)
+    x = np.array(x)
+    y = np.array(y)
+    z = np.array(z)
+
+    # make a default time-axis
+    t = range(0,len(x))
+
+    t = make_t(ext_entry, t_spin, ext_exit, x)
+
+
+    name = craft + '_' + datadate 
+
+    quickplot(name +'_raw','sample #','count [#]', t, r, x, y, z)
+
+    filebase_cal = 'C:/FGM_Extended_Mode/BS_ext_calibrated_files'
+
+    #filename = filebase_cal + '/' + name + '_raw_timestamped.txt'
+
+    #quicksave(filename,t,x,y,z,r)
+
+    #t,x,y,z,r = quickopen(filename)
+
+    quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]', t, r, x, y, z)
+
+
+    #nominal scaling
+    #nominal change from engineering units to nanotesla
+    # using +/-64nT with 15 bits in range 2
+
+    x = x * (2*64/2**15) * 4**(r-2)
+    y = y * (2*64/2**15) * 4**(r-2) * (np.pi/4)
+    z = z * (2*64/2**15) * 4**(r-2) * (np.pi/4)
+
+    quickplot(name +'_scaled','time [UTC]','[nT]', t, r, x, y, z)
+        
+    # apply approximate cal using orbit cal see notes 30-Jan-24
+
+    x, y, z = apply_calparams(t, calparams, r, x, y, z)
+    quickplot(name+'_calibrated','time [UTC]','[nT]', t,r, x, y, z)
+
+
+    x, y, z = FGMEXT_to_SCS(x,y,z)
+    quickplot(name +'_nominal_scs','time [UTC]','[nT]', t, r, x, y, z)
+
+
+    x,y,z = rotate_SCS(x,y,z)
+    quickplot(name +'_rotated_scs','time [UTC]','[nT]', t, r, x, y, z)
+
+    # Does theta change for rotate_SCS?
+
+
+    savename = filebase_cal +  '/' + name + '_calibrated.txt'
+
+    fgmsave(savename,t,x,y,z)
+        
+
+    print('saved as fgm dp format')
+    
+    metadata_savename =  filebase_cal +  '/' + name + '_info.txt'
+    
+    f = open(metadata_savename, "w")
+    f.write(index)
+    f.write(name)
+    f.write('Extended Mode Entry:')
+    f.write(ext_entry)
+    f.write('Extended Mode Exit:')
+    f.write(ext_exit)
+    f.write('MSA Dump:')
+    f.write(MSA_dump)
+    f.write('Last vector time {}'.format(t[len(t)-1]))
+    f.write('Ext Exit time {}'.format(ext_exit))
+    f.write('Difference {}'.format(ext_exit - t[len(t)-1]))
+    f.write('First Reset Vector')
+    f.write(sequential_data['reset_hex'][0])
+    f.write('Last Reset Vector')
+    f.write(sequential_data['reset_hex'][-1])
+    f.close()
+        
+
+
+
 
 
