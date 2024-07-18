@@ -25,25 +25,82 @@ sys.path.append('C:/FGM_Extended_Mode/Lib')
 
 from fgmfiletools import fgmsave
 
-# Currently uneeded imports
+from datetime import datetime, timedelta
 
-from datetime import datetime
+from ext_functions import closest_higher_date, packet_decoding_even, packet_decoding_odd, quickplot, quicksave, make_t, quickopen, apply_calparams, FGMEXT_to_SCS, rotate_SCS, find_cal_file, find_BS_file, packet
 
-from ext_functions import packet_decoding_even, packet_decoding_odd, quickplot, quicksave, make_t, quickopen, apply_calparams, FGMEXT_to_SCS, rotate_SCS, find_cal_file, find_BS_file, packet
+Ext_entries_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Entries'
 
-Period_identification_filepath = 'C:/FGM_Extended_Mode/SCCH_strings/' + craft + '_Entry_Exit_Dump_Duration_Tspin.csv'
+Ext_exits_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Exits'
 
-Entry_Exit_Dump_Duration_Tspin = pd.read_csv(Period_identification_filepath, index_col=0)
+MSA_dumps_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_MSA_Dump_times'
 
-ext_entry = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Entry Time'][index])
-ext_exit = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Exit Time'][index])
+starts_stops_spins_df = pd.read_csv('C:/FGM_Extended_Mode/Lib/' + craft + '_SATT_start_stop_spins',names = ['Starts', 'Stops', 'Spins'])
 
-ext_dump = datetime.fromisoformat(Entry_Exit_Dump_Duration_Tspin['Dump Time'][index])
-t_spin = Entry_Exit_Dump_Duration_Tspin['tspin'][index]
+ext_entries_df = pd.read_csv(Ext_entries_filepath, header = None)
 
-dumpdate = ext_dump.strftime('%Y%m%d')
+ext_entries = pd.to_datetime(ext_entries_df[0])
 
-year = ext_dump.strftime('%Y')
+ext_exits_df = pd.read_csv(Ext_exits_filepath, header = None)
+
+ext_exits = pd.to_datetime(ext_exits_df[0])
+
+MSA_dumps_df = pd.read_csv(MSA_dumps_filepath, header = None)
+
+MSA_dumps = pd.to_datetime(MSA_dumps_df[0])
+
+
+ext_entry = ext_entries[index]
+
+next_ext_entry = ext_entries[index + 1]
+
+ext_exit = closest_higher_date(ext_exits, ext_entry)
+
+next_ext_exit = closest_higher_date(ext_exits, next_ext_entry)
+
+MSA_dump = closest_higher_date(MSA_dumps, ext_exit)
+
+next_MSA_dump =  closest_higher_date(MSA_dumps, next_ext_exit)
+
+duration = ext_exit - ext_entry
+
+if ext_exit > next_ext_entry:
+    
+    raise Exception("Unmatched Entry")
+
+if MSA_dump > next_ext_exit:
+    
+    raise Exception("No Dump")
+    
+if duration <= timedelta(seconds = 0):
+    
+    raise Exception("Negatve/Zero Duration")
+
+
+
+closest_start = np.min(abs(pd.to_datetime(starts_stops_spins_df['Starts']) - ext_entry))
+
+diffs_to_start = abs(pd.to_datetime(starts_stops_spins_df['Starts']) - ext_entry)
+
+closest_stop = np.min(abs(pd.to_datetime(starts_stops_spins_df['Stops']) - ext_exit))
+
+diffs_to_stop = abs(pd.to_datetime(starts_stops_spins_df['Stops']) - ext_exit)
+
+if closest_start < closest_stop:
+    
+    SATT_index = list(diffs_to_start).index(closest_start)
+    
+else:
+    
+    SATT_index = list(diffs_to_stop).index(closest_stop)
+
+t_spin = 60 / starts_stops_spins_df['Spins'].iloc[SATT_index]
+
+
+
+dumpdate = MSA_dump.strftime('%Y%m%d')
+
+year = MSA_dump.strftime('%Y')
 
 datadate = ext_entry.strftime('%Y%m%d')
 
@@ -130,7 +187,6 @@ del data
 
 ext_packets = []
 
-other_packets = []
 
 for i in packets:
     
@@ -138,14 +194,8 @@ for i in packets:
         
         ext_packets.append(i)
         
-    else:
-        
-        other_packets.append(i)
-
-
 
 del packets 
-del other_packets
 
 
 ext_bytes = []
@@ -157,7 +207,7 @@ for i in ext_packets:
     ext_bytes.append(hex_vals)
 
 
-packet_range = np.arange(0, len(ext_bytes) )
+packet_range = np.arange(0, len(ext_bytes))
 
 
 # filtering for quality and only getting sequential even/odd
@@ -200,10 +250,7 @@ for i in packet_range:
     
 sequential_data = pd.concat(all_valid_dfs)
 
-#sequential_data = complete_df[~(complete_df.index.duplicated() & complete_df.duplicated)]
-
 sequential_data.drop_duplicates(keep = 'first', inplace = True)
-
 
 sequential_data.reset_index(drop = True, inplace = True)
 

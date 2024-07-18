@@ -338,3 +338,10 @@ class packet():
         return("{:7s}".format("#"+str(self.pktcnt))+" | "+" ".join('{:02X}'.format(n) for n in self.cdds)+" | "+" ".join('{:02X}'.format(n) for n in self.payload[0:30]))
 
 
+def closest_higher_date(date_list, test_date):
+    sorted_list = sorted(date_list)
+    for date in sorted_list:
+        if date >= test_date:
+            return date
+
+    return sorted_list[-1]
