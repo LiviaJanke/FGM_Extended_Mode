@@ -50,13 +50,29 @@ MSA_dumps_df = pd.read_csv(MSA_dumps_filepath, header = None)
 MSA_dumps = pd.to_datetime(MSA_dumps_df[0])
 
 
+
+index = 36
+
+craft = 'C1'
+
+
 ext_entry = ext_entries[index]
 
 next_ext_entry = ext_entries[index + 1]
 
+
+if index > 1:
+    prev_ext_entry = ext_entries[index - 1]
+    
+    prev_ext_exit = closest_higher_date(ext_exits, prev_ext_entry)
+    
+    prev_MSA_dump =  closest_higher_date(MSA_dumps, prev_ext_exit)
+
 ext_exit = closest_higher_date(ext_exits, ext_entry)
 
 next_ext_exit = closest_higher_date(ext_exits, next_ext_entry)
+
+
 
 MSA_dump = closest_higher_date(MSA_dumps, ext_exit)
 
@@ -75,6 +91,20 @@ if MSA_dump > next_ext_exit:
 if duration <= timedelta(seconds = 0):
     
     raise Exception("Negatve/Zero Duration")
+    
+early_half = False
+
+late_half = False
+
+if MSA_dump.strftime('%Y%m%d') == next_MSA_dump.strftime('%Y%m%d'):
+    
+    early_half = True
+    
+if index > 1:
+    
+    if MSA_dump.strftime('%Y%m%d') == prev_MSA_dump.strftime('%Y%m%d'):
+        
+        late_half = True
 
 
 
@@ -187,12 +217,49 @@ del data
 
 ext_packets = []
 
+packet_resets = []
 
-for i in packets:
+if early_half == True:
     
-    if i.status == 15:
+    for i in packets:
         
-        ext_packets.append(i)
+        if i.status == 15:
+            
+            packet_resets.append(i.reset)
+            
+            if len(packet_resets) < 2:
+        
+                ext_packets.append(i)
+                
+                first_reset = i.reset
+                
+            elif np.abs(packet_resets[-1] - packet_resets[-2]) < 10:
+                
+                ext_packets.append(i)
+                
+if late_half == True:
+    
+    for i in packets:
+        
+        if i.status == 15:
+            
+            packet_resets.append(i.reset)
+            
+            if len(packet_resets) > 1:
+        
+                if np.abs(i.reset - packet_resets[0]) > 200:
+                
+                    ext_packets.append(i)
+
+if early_half == False and late_half == False:
+
+    for i in packets:
+    
+        packet_resets.append(i.reset)
+    
+        if i.status == 15:
+        
+            ext_packets.append(i)
         
 
 del packets 
@@ -397,5 +464,5 @@ fgmsave(savename,t,x,y,z)
 print('saved as fgm dp format')
     
 
-metadata_savename = filebase_cal +  '/' + name + '_info.txt'
+
     
