@@ -37,9 +37,13 @@ indices = np.arange(0, len(ext_entries))
 
 for i in indices:
     
+    print(i)
+    
     try:
-        get_calibrated_ext_data(i, craft)
+        get_calibrated_ext_data(i, 'C1')
 
     except:
         
-        pass
+        print(Exception)
+
+        #pass

@@ -6,6 +6,10 @@ Created on Wed Jul 17 11:04:31 2024
 """
 import numpy as np
 
+from fgmfiletools import fgmsave
+
+import matplotlib.pyplot as plt
+
 import pandas as pd
 
 import os, fnmatch
@@ -774,9 +778,26 @@ def get_calibrated_ext_data(index, craft):
         
 
     print('saved as fgm dp format')
-        
-
-
+    
+    metadata_savename =  filebase_cal +  '/' + name + '_info.txt'
+    
+    f = open(metadata_savename, "w")
+    f.write(index)
+    f.write(name)
+    f.write('Extended Mode Entry:')
+    f.write(ext_entry)
+    f.write('Extended Mode Exit:')
+    f.write(ext_exit)
+    f.write('MSA Dump:')
+    f.write(MSA_dump)
+    f.write('Last vector time {}'.format(t[len(t)-1]))
+    f.write('Ext Exit time {}'.format(ext_exit))
+    f.write('Difference {}'.format(ext_exit - t[len(t)-1]))
+    f.write('First Reset Vector')
+    f.write(sequential_data['reset_hex'][0])
+    f.write('Last Reset Vector')
+    f.write(sequential_data['reset_hex'][-1])
+    f.close()
         
 
 
