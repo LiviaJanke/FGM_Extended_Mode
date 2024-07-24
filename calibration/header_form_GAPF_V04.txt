@@ -1,0 +1,187 @@
+!------------------- CEF ASCII File --------------------
+! CAA cef file with header details corrected up to 26/01/04  
+!-------------------------------------------------------
+!
+FILE_NAME            = "%{_OUTPUT_FILENAME}"
+FILE_FORMAT_VERSION  = "CEF-2.0"
+END_OF_RECORD_MARKER = "$"
+!-------------------------------------------------------
+!
+! The mission or project under which the data was collected
+!
+INCLUDE = "CL_CH_MISSION.ceh"
+!
+! The platform on which the hardware flies
+!
+INCLUDE = "C%{scraft}_CH_OBS.ceh"
+!
+! Experiment header file
+!
+INCLUDE = "CL_CH_FGM_EXP.ceh"
+!
+! The instrument used to collect the data
+!
+START_META     =   INSTRUMENT_NAME
+   ENTRY       =   "FGM%{scraft}"
+END_META       =   INSTRUMENT_NAME
+!
+! Short description of the instrument
+!
+START_META     =   INSTRUMENT_DESCRIPTION
+   ENTRY       =   "FGM Experiment on Cluster C%{scraft}"
+END_META       =   INSTRUMENT_DESCRIPTION
+!
+! Type of instrument used to collect the data
+!
+START_META     =   INSTRUMENT_TYPE
+   ENTRY       =   "Flux_Feedback"
+END_META       =   INSTRUMENT_TYPE
+!
+! Instrument caveats or ID of separate dataset containing the caveats
+!
+START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "*C%{scraft}_CQ_FGM_CAVF"
+END_META       =   INSTRUMENT_CAVEATS
+!
+! A unique identifier of the dataset e.g. C1_CP_ASP_ION1
+!
+START_META     =   DATASET_ID
+   ENTRY       =   "C%{scraft}_CQ_FGM_GAPF"
+END_META       =   DATASET_ID
+!
+! Used to distinguish the type of dataset
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CQ"
+END_META       =   DATA_TYPE
+!
+! Short title for the dataset
+!
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Magnetic field data missing from processed data set"
+END_META       =   DATASET_TITLE
+!
+! Short description of the data product
+!
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains start and end times of intervals of magnetic field data missing from all"
+   ENTRY       =   "Cluster C%{scraft} data sets after the data processing stage, but before validation"
+END_META       =   DATASET_DESCRIPTION
+!
+! Name of dataset contact
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Elizabeth Lucek>PI>e.lucek@imperial.ac.uk"
+END_META       =   CONTACT_COORDINATES
+!
+! Level of processing on the dataset
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Auxiliary"
+END_META       =   PROCESSING_LEVEL
+!
+! Acknowledgement
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the FGM team and ESA Cluster Active Archive in any publication based upon use of this data"
+END_META       =   ACKNOWLEDGEMENT
+!
+! Logical file ID for this instance of the file
+!
+START_META     =   LOGICAL_FILE_ID
+   ENTRY       =   "%{_LOGICAL_FILE_ID}"
+END_META       =   LOGICAL_FILE_ID
+!
+! Version identifier for this instance of the data
+!
+START_META     =   VERSION_NUMBER
+   ENTRY       =   "%version"
+END_META       =   VERSION_NUMBER
+!
+! Version identifier for this instance of the data
+!
+START_META     =   DATASET_VERSION
+   ENTRY       =   "%version"
+END_META       =   DATASET_VERSION
+!
+! File format
+!
+START_META     =   FILE_TYPE
+   ENTRY       =   "cef"
+END_META       =   FILE_TYPE
+!
+! Metadata specification used for this file
+!
+START_META     =   METADATA_TYPE
+   ENTRY       =   "CAA"
+END_META       =   METADATA_TYPE
+!
+! Version identifier for the metadata specification
+!
+START_META     =   METADATA_VERSION
+   ENTRY       =   "2.0"
+END_META       =   METADATA_VERSION
+!
+! Time span covered by this file
+!
+START_META     =   FILE_TIME_SPAN
+   VALUE_TYPE  =   ISO_TIME_RANGE
+   ENTRY       =   %{TIME_SPAN}
+END_META       =   FILE_TIME_SPAN
+!
+! Date when the file was created
+!
+START_META     =   GENERATION_DATE
+   VALUE_TYPE  =   ISO_TIME
+   ENTRY       =   %{_GENERATION_TIME}
+END_META       =   GENERATION_DATE
+!
+! Date when the file was ingested into CAA system
+!
+! Caveats or dataset ID containing file caveats
+!
+START_META     =   FILE_CAVEATS
+   ENTRY       =   ""
+END_META       =   FILE_CAVEATS
+!
+!
+!
+START_VARIABLE  =  Data_Gap__C%{scraft}_CQ_FGM_GAPF
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Support_Data"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Data gap after data processing, but before validation"
+    !
+    ! The units of the parameter
+    UNITS               = "s"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0>s"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = ISO_TIME_RANGE
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 49
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = 9999-12-31T23:59:59Z/9999-12-31T23:59:59Z
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "UT Time"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "UT"
+END_VARIABLE    =  Data_Gap__C%{scraft}_CQ_FGM_GAPF
+!
+!
+!
+DATA_UNTIL = EOF
+

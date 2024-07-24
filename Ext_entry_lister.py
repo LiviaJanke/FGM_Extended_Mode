@@ -38,7 +38,7 @@ import sys
 
 filebase = 'C:/FGM_Extended_Mode/SCCH_strings'
 
-craft = 'C1'
+craft = 'C4'
 
 filepath = filebase +'/' + craft 
 

@@ -35,7 +35,7 @@ ext_entries = pd.to_datetime(ext_entries_df[0])
 
 indices = np.arange(0, len(ext_entries))
 
-for i in indices:
+for i in indices[5:7]:
     
     print(i)
     
@@ -44,6 +44,6 @@ for i in indices:
 
     except:
         
-        print(Exception)
+        #print(Exception)
 
-        #pass
+        pass

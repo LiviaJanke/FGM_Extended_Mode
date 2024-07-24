@@ -453,7 +453,7 @@ def get_calibrated_ext_data(index, craft):
     datadate = ext_entry.strftime('%Y%m%d')
 
 
-    calparams_filepath = 'C:/FGM_Extended_Mode/Calibration_files/2001_C1/'
+    calparams_filepath = 'C:/FGM_Extended_Mode/calibration'
 
     formatted_entry = ext_entry.strftime('%Y%m%d')
 
@@ -498,15 +498,13 @@ def get_calibrated_ext_data(index, craft):
                  'yz_gains':   yz_gains}
 
 
-    folder =  year + '_' + craft + '/'
+    #folder =  year + '_' + craft + '/'
 
-    BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' + folder
+    BS_filepath = 'C:/FGM_Extended_Mode/BS_raw_files/' # + folder
 
     BS_filename = find_BS_file(dumpdate[2:], craft, BS_filepath)
 
-    BS_file_location = BS_filename
-
-    file = open(BS_file_location,"rb")
+    file = open(BS_filename,"rb")
 
     # this is the entire BS file retrieved on the dump date, including Burst Science data 
     # D Burst Science packets have size 2232
@@ -733,9 +731,9 @@ def get_calibrated_ext_data(index, craft):
 
     name = craft + '_' + datadate 
 
-    quickplot(name +'_raw','sample #','count [#]', t, r, x, y, z)
+    #quickplot(name +'_raw','sample #','count [#]', t, r, x, y, z)
 
-    filebase_cal = 'C:/FGM_Extended_Mode/BS_ext_calibrated_files'
+    filebase_cal = 'C:/FGM_Extended_Mode/' + craft + '_EXT_Calibrated'
 
     #filename = filebase_cal + '/' + name + '_raw_timestamped.txt'
 
@@ -743,7 +741,7 @@ def get_calibrated_ext_data(index, craft):
 
     #t,x,y,z,r = quickopen(filename)
 
-    quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]', t, r, x, y, z)
+    #quickplot(name +'_raw_timestamped_despiked','time [UTC]','count [#]', t, r, x, y, z)
 
 
     #nominal scaling
@@ -754,50 +752,58 @@ def get_calibrated_ext_data(index, craft):
     y = y * (2*64/2**15) * 4**(r-2) * (np.pi/4)
     z = z * (2*64/2**15) * 4**(r-2) * (np.pi/4)
 
-    quickplot(name +'_scaled','time [UTC]','[nT]', t, r, x, y, z)
+    #quickplot(name +'_scaled','time [UTC]','[nT]', t, r, x, y, z)
         
     # apply approximate cal using orbit cal see notes 30-Jan-24
 
     x, y, z = apply_calparams(t, calparams, r, x, y, z)
-    quickplot(name+'_calibrated','time [UTC]','[nT]', t,r, x, y, z)
+    #quickplot(name+'_calibrated','time [UTC]','[nT]', t,r, x, y, z)
 
 
     x, y, z = FGMEXT_to_SCS(x,y,z)
-    quickplot(name +'_nominal_scs','time [UTC]','[nT]', t, r, x, y, z)
+    #quickplot(name +'_nominal_scs','time [UTC]','[nT]', t, r, x, y, z)
 
 
     x,y,z = rotate_SCS(x,y,z)
     quickplot(name +'_rotated_scs','time [UTC]','[nT]', t, r, x, y, z)
 
     # Does theta change for rotate_SCS?
+    start_time = t[0].strftime('%Y%m%d_%H%M%S')
+        
+    end_time = t[-1].strftime('%Y%m%d_%H%M%S')
+    
 
-
-    savename = filebase_cal +  '/' + name + '_calibrated.txt'
+    savename = filebase_cal +  '/' + craft + '_' + start_time + '_' + end_time
 
     fgmsave(savename,t,x,y,z)
         
 
     print('saved as fgm dp format')
     
-    metadata_savename =  filebase_cal +  '/' + name + '_info.txt'
+    #metadata_savename =  filebase_cal + '/' + craft + '_' + start_time + '_' + end_time + '_info.txt'
     
-    f = open(metadata_savename, "w")
-    f.write(index)
-    f.write(name)
-    f.write('Extended Mode Entry:')
-    f.write(ext_entry)
-    f.write('Extended Mode Exit:')
-    f.write(ext_exit)
-    f.write('MSA Dump:')
-    f.write(MSA_dump)
-    f.write('Last vector time {}'.format(t[len(t)-1]))
-    f.write('Ext Exit time {}'.format(ext_exit))
-    f.write('Difference {}'.format(ext_exit - t[len(t)-1]))
-    f.write('First Reset Vector')
-    f.write(sequential_data['reset_hex'][0])
-    f.write('Last Reset Vector')
-    f.write(sequential_data['reset_hex'][-1])
-    f.close()
+    # this whole write function doesn't do anything
+    # very sad
+    
+    #f = open(metadata_savename, "w")
+    #f.write(index)
+    #f.write(name)
+    #f.write(t[0])
+    #f.write(t[-1])
+    #f.write('Extended Mode Entry:')
+    #f.write(ext_entry)
+    #f.write('Extended Mode Exit:')
+    #f.write(ext_exit)
+    #f.write('MSA Dump:')
+    #f.write(MSA_dump)
+    #f.write('Last vector time {}'.format(t[len(t)-1]))
+    #f.write('Ext Exit time {}'.format(ext_exit))
+    #f.write('Difference {}'.format(ext_exit - t[len(t)-1]))
+    #f.write('First Reset Vector')
+    #f.write(sequential_data['reset_hex'][0])
+    #f.write('Last Reset Vector')
+    #f.write(sequential_data['reset_hex'][-1])
+    #f.close()
         
 
 
