@@ -23,6 +23,8 @@ from sys import path
 orbitpath = '../Lib'
 if not path.count(orbitpath):
     path.append(orbitpath)
+    
+path.append('C:\\FGM_Extended_Mode\\Lib')
 
 from fgmfiletools import fgmopen
 from fgmplottools import fgmplot
@@ -60,7 +62,7 @@ fgmplotParams['figsize'] = (10,12)
 # C4 = fgmopen('./','C4_CP_FGM_5VPS__20010102_055913_20010104_150531_V01.cef')
 
 #%% open CEF files in this folder
-C1 = fgmopen('./','C1_CP_FGM_5VPS__20010104_150531_20010107_001002_V01.cef')
+C1 = fgmopen('./','C1_CP_FGM_EXTM__20010322_141554_20010323_01_39_23_V01.cef')
 # C2 = fgmopen('./','C2_CP_FGM_5VPS__20010104_150531_20010107_001002_V01.cef')
 # C3 = fgmopen('./','C3_CP_FGM_5VPS__20010104_150531_20010107_001002_V01.cef')
 # C4 = fgmopen('./','C4_CP_FGM_5VPS__20010104_150531_20010107_001002_V01.cef')

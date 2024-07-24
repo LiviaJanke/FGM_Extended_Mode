@@ -1,0 +1,512 @@
+!------------------- CEF ASCII File --------------------
+! CAA cef file with header details corrected up to 26/01/04  
+!-------------------------------------------------------
+!
+FILE_NAME            = "%{_OUTPUT_FILENAME}"
+FILE_FORMAT_VERSION  = "CEF-2.0"
+END_OF_RECORD_MARKER = "$"
+!-------------------------------------------------------
+!
+! The mission or project under which the data was collected
+!
+INCLUDE = "CL_CH_MISSION.ceh"
+!
+! The platform on which the hardware flies
+!
+INCLUDE = "C%{_SPACECRAFT_NUMBER}_CH_OBS.ceh"
+!
+! Experiment header file
+!
+INCLUDE = "CL_CH_FGM_EXP.ceh"
+!
+! The instrument used to collect the data
+!
+START_META     =   INSTRUMENT_NAME
+   ENTRY       =   "FGM%{_SPACECRAFT_NUMBER}"
+END_META       =   INSTRUMENT_NAME
+!
+! Short description of the instrument
+!
+START_META     =   INSTRUMENT_DESCRIPTION
+   ENTRY       =   "FGM Experiment on Cluster C%{_SPACECRAFT_NUMBER}"
+END_META       =   INSTRUMENT_DESCRIPTION
+!
+! Type of instrument used to collect the data
+!
+START_META     =   INSTRUMENT_TYPE
+   ENTRY       =   "Flux_Feedback"
+END_META       =   INSTRUMENT_TYPE
+!
+! Type of measurement being made
+!
+START_META 	   =   MEASUREMENT_TYPE
+   ENTRY 	   =   "Magnetic_Field"
+END_META       =   MEASUREMENT_TYPE
+!
+! Instrument caveats or ID of separate dataset containing the caveats
+!
+START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "*C%{_SPACECRAFT_NUMBER}_CQ_FGM_CAVF"
+END_META       =   INSTRUMENT_CAVEATS
+!
+! A unique identifier of the dataset e.g. C1_CP_ASP_ION1
+!
+START_META     =   DATASET_ID
+   ENTRY       =   "C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN"
+END_META       =   DATASET_ID
+!
+! Used to distinguish the type of dataset
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP>CAA Parameter"
+END_META       =   DATA_TYPE
+!
+! Short title for the dataset
+!
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Magnetic field, spin resolution"
+END_META       =   DATASET_TITLE
+!
+! Short description of the data product
+!
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains spin resolution measurements of the magnetic field vector from the FGM"
+   ENTRY       =   "experiment on the Cluster C%{_SPACECRAFT_NUMBER} spacecraft"
+END_META       =   DATASET_DESCRIPTION
+!
+! Name of dataset contact
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Elizabeth Lucek>PI>e.lucek@imperial.ac.uk"
+END_META       =   CONTACT_COORDINATES
+!
+! Characteristic time interval (in s) between data samples
+!
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   4
+END_META       =   TIME_RESOLUTION
+!
+! Maximum time interval (in s)
+!
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   4.412
+END_META       =   MIN_TIME_RESOLUTION
+!
+! Minimum time interval (in s)
+!
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   3.636
+END_META       =   MAX_TIME_RESOLUTION
+!
+! Level of processing on the dataset
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!
+! Acknowledgement
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the FGM team and ESA Cluster Active Archive in any publication based upon use of this data"
+END_META       =   ACKNOWLEDGEMENT
+!
+! Cavetas or ID of product that contains the caveats
+!
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "*C%{_SPACECRAFT_NUMBER}_CQ_FGM_CAVF"
+END_META       =   DATASET_CAVEATS
+!
+! Logical file ID for this instance of the file
+!
+START_META     =   LOGICAL_FILE_ID
+   ENTRY       =   "%{_LOGICAL_FILE_ID}"
+END_META       =   LOGICAL_FILE_ID
+!
+! Version identifier for this instance of the data
+!
+START_META     =   VERSION_NUMBER
+   ENTRY       =   "%version"
+END_META       =   VERSION_NUMBER
+!
+! Version identifier for this instance of the data
+!
+START_META     =   DATASET_VERSION
+   ENTRY       =   "%version"
+END_META       =   DATASET_VERSION
+!
+! File format
+!
+START_META     =   FILE_TYPE
+   ENTRY       =   "cef"
+END_META       =   FILE_TYPE
+!
+! Metadata specification used for this file
+!
+START_META     =   METADATA_TYPE
+   ENTRY       =   "CAA"
+END_META       =   METADATA_TYPE
+!
+! Version identifier for the metadata specification
+!
+START_META     =   METADATA_VERSION
+   ENTRY       =   "2.0"
+END_META       =   METADATA_VERSION
+!
+! Time span covered by this file
+!
+START_META     =   FILE_TIME_SPAN
+   VALUE_TYPE  =   ISO_TIME_RANGE
+   ENTRY       =   %{TIME_SPAN}
+END_META       =   FILE_TIME_SPAN
+!
+! Date when the file was created
+!
+START_META     =   GENERATION_DATE
+   VALUE_TYPE  =   ISO_TIME
+   ENTRY       =   %{_GENERATION_TIME}
+END_META       =   GENERATION_DATE
+!
+! Date when the file was ingested into CAA system
+!
+! Caveats or dataset ID containing file caveats
+!
+START_META     =   FILE_CAVEATS
+   ENTRY       =   "Calibration parameters have been estimated using the Fourier analysis method, some intercalibration results, some EDI input and the range jump correction method."
+END_META       =   FILE_CAVEATS
+!
+!
+!
+START_VARIABLE  =  time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Support_Data"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Interval centred time tag"
+    !
+    ! The units of the parameter
+    UNITS               = "s"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0>s"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = ISO_TIME
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 24
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = 9999-12-31T23:59:59Z
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Universal Time"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "UT"
+    !
+    ! Value or variable added to define top of depend bin
+    DELTA_PLUS          = half_interval__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Value or variable subtracted to define bottom of depend bin
+    DELTA_MINUS         = half_interval__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+END_VARIABLE    =  time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+START_VARIABLE  =  half_interval__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Support_Data"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Half averaging interval length"
+    !
+    ! The units of the parameter
+    UNITS               = "s"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0>s"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = FLOAT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 6 
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = -1e30
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Half width of averaging interval"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "s"
+    !
+END_VARIABLE    =  half_interval__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+START_VARIABLE  =  B_vec_xyz_gse__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Data"
+    !
+    ! Entity whose property is measured
+    ENTITY              = "Magnetic_Field"
+    !
+    ! Property of the entity that is being measured
+    PROPERTY            = "Vector"
+    !
+    FLUCTUATIONS      = "Waveform"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Cluster C%{_SPACECRAFT_NUMBER}, Magnetic Field Vector, spin resolution in GSE"
+    !
+    ! The units of the parameter
+    UNITS               = "nT"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0E-9>T"
+    !
+    ! Order of parameter, 0=scalar, 1=vector, 2=tensor of rank 2
+    TENSOR_ORDER        = "1"
+    !
+    ! Co-ordinate system in which this parameter has been measured
+    COORDINATE_SYSTEM   = "GSE>Geocentric Solar Ecliptic"
+    !
+    ! Describes first dimension of vector/tensor
+    REPRESENTATION_1    = "x", "y", "z"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 3
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = FLOAT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 6
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = -1e30
+    !
+    ! Quality of the parameter
+    QUALITY             = 3
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Cluster C%{_SPACECRAFT_NUMBER}, Magnetic Field Vector, spin resolution in GSE"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "Mag Field"
+    !
+    ! Indicates the dependent variable for the record varying dimension (usually time)
+    DEPEND_0            = time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Indicates the labels for first dimension
+    LABEL_1             = "Bx", "By", "Bz"
+END_VARIABLE    =  B_vec_xyz_gse__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+START_VARIABLE  =  B_mag__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Data"
+    !
+    ! Entity whose property is measured
+    ENTITY              = "Magnetic_Field"
+    !
+    ! Property of the entity that is being measured
+    PROPERTY            = "Magnitude"
+    !
+    FLUCTUATIONS      = "Waveform"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Cluster C%{_SPACECRAFT_NUMBER}, Magnetic Field Magnitude, spin resolution"
+    !
+    ! The units of the parameter
+    UNITS               = "nT"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0E-9>T"
+    !
+    ! Order of parameter, 0=scalar, 1=vector, 2=tensor of rank 2
+    TENSOR_ORDER        = "0"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = FLOAT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 6
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = -1.0E30
+    !
+    ! Quality of the parameter
+    QUALITY             = 3
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Cluster C%{_SPACECRAFT_NUMBER}, Magnetic Field Magnitude, spin resolution"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "B"
+    !
+    ! Indicates the dependent variable for the record varying dimension (usually time)
+    DEPEND_0            = time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+END_VARIABLE    =  B_mag__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+START_VARIABLE  =  sc_pos_xyz_gse__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Data"
+    !
+    ! Entity whose property is measured
+    ENTITY              = "Other1"
+    !
+    ! Property of the entity that is being measured
+    PROPERTY            = "Vector"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Position of Cluster C%{_SPACECRAFT_NUMBER} in GSE"
+    !
+    ! The units of the parameter
+    UNITS               = "km"
+    !
+    ! Ratio of data unit to SI unit (see section 6.8 of MDD)
+    SI_CONVERSION       = "1.0E3>m"
+    !
+    ! Order of parameter, 0=scalar, 1=vector, 2=tensor of rank 2
+    TENSOR_ORDER        = "1"
+    !
+    ! Co-ordinate system in which this parameter has been measured
+    COORDINATE_SYSTEM   = "GSE>Geocentric Solar Ecliptic"
+    !
+    ! Describes first dimension of vector/tensor
+    REPRESENTATION_1    = "x", "y", "z"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 3
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = FLOAT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 7
+    !
+    ! Fill value used when data valueis bad or missing
+    FILLVAL             = -1.0E30
+    !
+    ! Quality of the parameter
+    QUALITY             = 0
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Position of Cluster C%{_SPACECRAFT_NUMBER} in GSE"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "Position"
+    !
+    ! Indicates the dependent variable for the record varying dimension (usually time)
+    DEPEND_0            = time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Indicates the labels for first dimension
+    LABEL_1             = "x", "y", "z"
+END_VARIABLE    =  sc_pos_xyz_gse__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+START_VARIABLE  =  range__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Support_Data"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Cluster C%{_SPACECRAFT_NUMBER}, FGM instrument range, defined on spin resolution time line"
+    !
+    ! The units of the parameter
+    UNITS               = "Unitless"
+    !
+    ! Order of parameter, 0=scalar, 1=vector, 2=tensor of rank 2
+    TENSOR_ORDER        = "0"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = INT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 1
+    !
+    ! Fill value used when data value is bad or missing
+    FILLVAL             = -9
+    !
+    ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Cluster C%{_SPACECRAFT_NUMBER}, FGM Instrument Range, on spin resolution time line"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "Range"
+    !
+    ! Indicates the dependent variable for the record varying dimension (usually time)
+    DEPEND_0            = time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+END_VARIABLE    =  range__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+! 
+!
+START_VARIABLE  =  tm__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+    !
+    ! Parameter ID
+    !
+    ! Type of parameter
+    PARAMETER_TYPE      = "Support_Data"
+    !
+    ! Short description of the parameters
+    CATDESC             = "Cluster C%{_SPACECRAFT_NUMBER}, FGM telemtry mode (burst mode/normal mode) on spin resolution time line"
+    !
+    ! The units of the parameter
+    UNITS               = "Unitless"
+    !
+    ! Order of parameter, 0=scalar, 1=vector, 2=tensor of rank 2
+    TENSOR_ORDER        = "0"
+    !
+    ! Number of elements in each dimension
+    SIZES               = 1
+    !
+    ! Type of value (may be used to assist conversion from ASCII to binary)
+    VALUE_TYPE          = INT
+    !
+    ! Number of decimal digits required to preserve precision of parameter
+    SIGNIFICANT_DIGITS  = 2
+    !
+    ! Fill value used when data valueis bad or missing
+    FILLVAL             = -99
+    !
+     ! Label discriminating the parameter (use LABELAXIS for axis)
+    FIELDNAM            = "Cluster C%{_SPACECRAFT_NUMBER}, telemetry mode on spin resolution time line"
+    !
+    ! Short character string used to label y-axis
+    LABLAXIS            = "TM"
+    !
+    ! Indicates the dependent variable for the record varying dimension (usually time)
+    DEPEND_0            = time_tags__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+END_VARIABLE    =  tm__C%{_SPACECRAFT_NUMBER}_CP_FGM_SPIN
+!
+!
+!
+DATA_UNTIL = EOF
