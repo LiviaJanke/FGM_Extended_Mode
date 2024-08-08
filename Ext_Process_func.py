@@ -25,7 +25,7 @@ from ext_functions import get_calibrated_ext_data, closest_higher_date, packet_d
 
 
 
-craft = 'C1'
+craft = 'C4'
 
 Ext_entries_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Entries'
 
@@ -35,15 +35,32 @@ ext_entries = pd.to_datetime(ext_entries_df[0])
 
 indices = np.arange(0, len(ext_entries))
 
-for i in indices[5:7]:
-    
-    print(i)
-    
-    try:
-        get_calibrated_ext_data(i, 'C1')
+Needed_dumpdates = []
 
+for i in indices:
+    
+    try: 
+        dumpdate = get_BS_filenames(i, craft)
+        Needed_dumpdates.append(dumpdate)
     except:
+        pass
+    
+#for i in indices:    
+#    print(i)
+    
+#    try:
+        #get_calibrated_ext_data(i, 'C1')
+#        dumpdate = get_BS_filenames(i, 'C1')
+#        print(dumpdate)
+#        Needed_dumpdates.append(dumpdate)
+#    except:
         
         #print(Exception)
 
-        pass
+#        pass
+
+#%%
+
+with open(craft +'_needed_dumpdates', 'w') as f:
+    for i in Needed_dumpdates:
+        f.write(f"{i}\n")

@@ -350,6 +350,80 @@ def closest_higher_date(date_list, test_date):
 
     return sorted_list[-1]
 
+def get_BS_filenames(index, craft):
+    
+    Ext_entries_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Entries'
+
+    Ext_exits_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_Ext_Exits'
+
+    MSA_dumps_filepath = 'C:/FGM_Extended_Mode/Lib/' + craft + '_MSA_Dump_times'
+    
+    ext_entries_df = pd.read_csv(Ext_entries_filepath, header = None)
+
+    ext_entries = pd.to_datetime(ext_entries_df[0])
+
+    ext_exits_df = pd.read_csv(Ext_exits_filepath, header = None)
+
+    ext_exits = pd.to_datetime(ext_exits_df[0])
+
+    MSA_dumps_df = pd.read_csv(MSA_dumps_filepath, header = None)
+
+    MSA_dumps = pd.to_datetime(MSA_dumps_df[0])
+        
+
+    ext_entry = ext_entries[index]
+
+    next_ext_entry = ext_entries[index + 1]
+
+
+    if index > 1:
+        prev_ext_entry = ext_entries[index - 1]
+        
+        prev_ext_exit = closest_higher_date(ext_exits, prev_ext_entry)
+        
+        prev_MSA_dump =  closest_higher_date(MSA_dumps, prev_ext_exit)
+
+    ext_exit = closest_higher_date(ext_exits, ext_entry)
+
+    next_ext_exit = closest_higher_date(ext_exits, next_ext_entry)
+
+
+    MSA_dump = closest_higher_date(MSA_dumps, ext_exit)
+
+    next_MSA_dump =  closest_higher_date(MSA_dumps, next_ext_exit)
+
+    duration = ext_exit - ext_entry
+
+    if ext_exit > next_ext_entry:
+        
+        raise Exception("Unmatched Entry")
+
+    if MSA_dump > next_ext_exit:
+        
+        raise Exception("No Dump")
+        
+    if duration <= timedelta(seconds = 0):
+        
+        raise Exception("Negatve/Zero Duration")
+        
+    early_half = False
+
+    late_half = False
+
+    if MSA_dump.strftime('%Y%m%d') == next_MSA_dump.strftime('%Y%m%d'):
+        
+        early_half = True
+        
+    if index > 1:
+        
+        if MSA_dump.strftime('%Y%m%d') == prev_MSA_dump.strftime('%Y%m%d'):
+            
+            late_half = True
+
+    dumpdate = MSA_dump.strftime('%y%m%d')
+    
+    return dumpdate
+
 
 
 def get_calibrated_ext_data(index, craft):
@@ -706,7 +780,7 @@ def get_calibrated_ext_data(index, craft):
 
     sequential_data.to_csv(filepath)
 
-    del filepath
+    #del filepath
 
 
     # timestamping and scaling decoded file
